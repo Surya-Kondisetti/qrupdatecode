@@ -1,0 +1,170 @@
+<div class="admin-dashboard-page p-6">
+  <!-- Page Header -->
+  <div class="page-header">
+    <div class="page-header__info">
+      <h1 class="page-title">Admin Dashboard</h1>
+      <p class="page-subtitle">TechWing Student Attendance & Management System • {{ todayStr }}</p>
+    </div>
+    <div class="page-header__actions">
+      <a routerLink="/admin/students" class="btn btn--primary">
+        <i class="bi bi-people-fill me-1"></i> Manage Students
+      </a>
+      <a routerLink="/admin/import" class="btn btn--secondary">
+        <i class="bi bi-file-earmark-spreadsheet-fill me-1"></i> Import Excel
+      </a>
+      <a routerLink="/admin/qr-designer" class="btn btn--accent">
+        <i class="bi bi-qr-code-scan me-1"></i> QR Studio
+      </a>
+      <button class="btn btn--secondary" (click)="exportTodayReport()">
+        <i class="bi bi-download me-1"></i> Export Today
+      </button>
+      <button class="btn btn--outline-primary" (click)="triggerMonthlyArchival()" [disabled]="isArchiving">
+        <i class="bi bi-archive-fill me-1"></i> {{ isArchiving ? 'Archiving...' : 'Archive Month' }}
+      </button>
+    </div>
+  </div>
+
+  <!-- Session Status Banner -->
+  <div class="session-banner mb-6">
+    <div class="session-card active">
+      <div class="session-status-dot green"></div>
+      <div class="session-details">
+        <span class="session-name">Morning Session</span>
+        <span class="session-time">08:00 AM – 11:00 AM</span>
+      </div>
+      <span class="badge badge--present">ACTIVE SESSION</span>
+    </div>
+
+    <div class="session-card">
+      <div class="session-status-dot gray"></div>
+      <div class="session-details">
+        <span class="session-name">Afternoon Session</span>
+        <span class="session-time">01:00 PM – 03:00 PM</span>
+      </div>
+      <span class="badge badge--na">OPENS AT 01:00 PM</span>
+    </div>
+  </div>
+
+  <!-- Top Stat Cards Grid -->
+  <div class="d-grid gap-5 mb-8" style="grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));" *ngIf="stats">
+    <div class="stat-card stat-card--orange">
+      <div class="stat-card__icon">
+        <i class="bi bi-people-fill"></i>
+      </div>
+      <div class="stat-card__content">
+        <div class="stat-card__label">Total Students</div>
+        <div class="stat-card__value">{{ stats.total_students }}</div>
+        <div class="stat-card__change positive">Registered across 6 branches</div>
+      </div>
+    </div>
+
+    <div class="stat-card stat-card--green">
+      <div class="stat-card__icon">
+        <i class="bi bi-person-check-fill"></i>
+      </div>
+      <div class="stat-card__content">
+        <div class="stat-card__label">Present Today</div>
+        <div class="stat-card__value">{{ stats.present_today }}</div>
+        <div class="stat-card__change positive">↑ 92% attendance rate</div>
+      </div>
+    </div>
+
+    <div class="stat-card stat-card--red">
+      <div class="stat-card__icon">
+        <i class="bi bi-person-x-fill"></i>
+      </div>
+      <div class="stat-card__content">
+        <div class="stat-card__label">Absent Today</div>
+        <div class="stat-card__value">{{ stats.absent_today }}</div>
+        <div class="stat-card__change negative">Requires follow up</div>
+      </div>
+    </div>
+
+    <div class="stat-card stat-card--yellow">
+      <div class="stat-card__icon">
+        <i class="bi bi-percent"></i>
+      </div>
+      <div class="stat-card__content">
+        <div class="stat-card__label">Avg Attendance %</div>
+        <div class="stat-card__value">{{ stats.attendance_percentage }}%</div>
+        <div class="stat-card__change positive">Above 75% threshold</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Branch Overview & Recent Activity Grid -->
+  <div class="d-grid gap-6" style="grid-template-columns: 1fr 2fr;">
+    <!-- Branch Overview Card -->
+    <div class="tw-card">
+      <div class="tw-card__header">
+        <div>
+          <div class="tw-card__title">Branch Breakdown</div>
+          <div class="tw-card__subtitle">Active Engineering Departments</div>
+        </div>
+      </div>
+      <div class="tw-card__body p-4">
+        <div class="branch-item py-3" *ngFor="let br of [
+          { name: 'Computer Science (CSE)', count: 12, pct: 92, color: '#E2661A' },
+          { name: 'Electronics (ECE)', count: 8, pct: 88, color: '#3B82F6' },
+          { name: 'Information Tech (IT)', count: 6, pct: 85, color: '#8B5CF6' },
+          { name: 'Electrical (EEE)', count: 6, pct: 90, color: '#22C55E' }
+        ]">
+          <div class="d-flex justify-between align-center mb-1">
+            <span class="font-semibold text-sm">{{ br.name }}</span>
+            <span class="font-bold text-sm" [style.color]="br.color">{{ br.pct }}%</span>
+          </div>
+          <div class="progress-bar-bg">
+            <div class="progress-bar-fill" [style.width.%]="br.pct" [style.background]="br.color"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Live Attendance Log Table -->
+    <div class="tw-card">
+      <div class="tw-card__header">
+        <div>
+          <div class="tw-card__title">Recent Live Attendance Scans</div>
+          <div class="tw-card__subtitle">Real-time QR verification log</div>
+        </div>
+        <a routerLink="/admin/attendance" class="btn btn--sm btn--ghost">View All</a>
+      </div>
+      <div class="tw-card__body p-0">
+        <div class="tw-table-wrapper">
+          <table class="tw-table">
+            <thead>
+              <tr>
+                <th>Student</th>
+                <th>Roll No</th>
+                <th>Branch / Batch</th>
+                <th>Session</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let rec of recentRecords">
+                <td>
+                  <div class="d-flex align-center gap-3">
+                    <div class="student-avatar">{{ rec.student?.full_name?.charAt(0) }}</div>
+                    <div>
+                      <div class="cell-primary">{{ rec.student?.full_name }}</div>
+                      <div class="cell-secondary">{{ rec.student?.email }}</div>
+                    </div>
+                  </div>
+                </td>
+                <td class="font-semibold">{{ rec.student?.roll_number }}</td>
+                <td>{{ rec.student?.branch?.code }} - {{ rec.student?.batch?.name }}</td>
+                <td><span class="badge badge--no-dot badge--info">{{ rec.session | uppercase }}</span></td>
+                <td>
+                  <span class="badge" [class.badge--present]="rec.status === 'present'" [class.badge--absent]="rec.status === 'absent'" [class.badge--late]="rec.status === 'late'">
+                    {{ rec.status | uppercase }}
+                  </span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

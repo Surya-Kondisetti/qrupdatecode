@@ -1,0 +1,92 @@
+<div class="attendance-master-page p-6">
+  <!-- Header -->
+  <div class="page-header">
+    <div class="page-header__info">
+      <h1 class="page-title">Attendance Master Log</h1>
+      <p class="page-subtitle">Centralized attendance audit ledger and filterable attendance records</p>
+    </div>
+    <div class="page-header__actions">
+      <button class="btn btn--secondary" (click)="exportCSV()">
+        <i class="bi bi-file-earmark-code"></i> Export CSV
+      </button>
+      <button class="btn btn--primary" (click)="exportExcel()">
+        <i class="bi bi-file-earmark-excel"></i> Export Excel (.xlsx)
+      </button>
+    </div>
+  </div>
+
+  <!-- Filter Bar -->
+  <div class="filter-bar">
+    <div class="filter-bar__search">
+      <div class="input-group">
+        <i class="bi bi-search input-icon"></i>
+        <input type="text" class="form-control" placeholder="Search by student name or roll number..." [(ngModel)]="filterSearch" (ngModelChange)="refreshRecords()">
+      </div>
+    </div>
+
+    <div class="filter-bar__filters">
+      <select class="form-control" [(ngModel)]="filterBranchId" (change)="refreshRecords()" style="width: 170px;">
+        <option value="">All Branches</option>
+        <option *ngFor="let br of branches" [value]="br.id">{{ br.code }}</option>
+      </select>
+
+      <select class="form-control" [(ngModel)]="filterBatchId" (change)="refreshRecords()" style="width: 150px;">
+        <option value="">All Batches</option>
+        <option *ngFor="let bt of batches" [value]="bt.id">{{ bt.name }}</option>
+      </select>
+
+      <select class="form-control" [(ngModel)]="filterStatus" (change)="refreshRecords()" style="width: 140px;">
+        <option value="">All Statuses</option>
+        <option value="present">Present</option>
+        <option value="absent">Absent</option>
+        <option value="late">Late</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Table -->
+  <div class="tw-card">
+    <div class="tw-card__body p-0">
+      <div class="tw-table-wrapper">
+        <table class="tw-table">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Student Details</th>
+              <th>Roll Number</th>
+              <th>Branch / Batch</th>
+              <th>Session</th>
+              <th>Status</th>
+              <th>Scan Time</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let r of records">
+              <td class="font-mono text-xs">{{ r.attendance_date }}</td>
+              <td>
+                <div class="d-flex align-center gap-3">
+                  <div class="student-avatar">{{ r.student?.full_name?.charAt(0) }}</div>
+                  <div>
+                    <div class="cell-primary">{{ r.student?.full_name }}</div>
+                    <div class="cell-secondary">{{ r.student?.email }}</div>
+                  </div>
+                </div>
+              </td>
+              <td class="font-bold text-primary">{{ r.student?.roll_number }}</td>
+              <td>{{ r.student?.branch?.code }} - {{ r.student?.batch?.name }}</td>
+              <td><span class="badge badge--no-dot badge--info">{{ r.session | uppercase }}</span></td>
+              <td>
+                <span class="badge" [class.badge--present]="r.status === 'present'" [class.badge--absent]="r.status === 'absent'" [class.badge--late]="r.status === 'late'">
+                  {{ r.status | uppercase }}
+                </span>
+              </td>
+              <td class="text-xs text-muted">
+                {{ r.scan_time ? (r.scan_time | date:'shortTime') : 'Manual / System' }}
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>

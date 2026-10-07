@@ -1,0 +1,72 @@
+<div class="archives-manager-page p-6">
+  <!-- Header -->
+  <div class="page-header">
+    <div class="page-header__info">
+      <h1 class="page-title">Monthly Attendance Archives</h1>
+      <p class="page-subtitle">Lock monthly attendance periods, preserve full history, and download monthly ZIP packages</p>
+    </div>
+    <div class="page-header__actions">
+      <button class="btn btn--primary btn--lg" (click)="closeActiveMonth()" [disabled]="isProcessing">
+        <i class="bi bi-archive-fill"></i> {{ isProcessing ? 'Archiving Period...' : 'Close & Archive Current Month' }}
+      </button>
+    </div>
+  </div>
+
+  <!-- Info Alert Banner -->
+  <div class="tw-card mb-6 p-5" style="border-left: 4px solid #E2661A;">
+    <div class="d-flex align-center gap-3">
+      <i class="bi bi-shield-check text-primary font-bold display-6"></i>
+      <div>
+        <h4 class="mb-1">Non-Destructive Archival Architecture</h4>
+        <p class="text-sm text-muted mb-0">
+          Monthly archiving locks the active attendance period and resets the current session view.
+          <strong>Historical database records are NEVER deleted</strong>, allowing students, mentors, HODs, and admins to review previous months at any time.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Archives List Cards -->
+  <div class="d-grid gap-5" style="grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));">
+    <div class="tw-card tw-card--hover" *ngFor="let arch of archives">
+      <div class="tw-card__header">
+        <div>
+          <div class="tw-card__title">{{ arch.period_label }}</div>
+          <div class="tw-card__subtitle">Archived on {{ arch.archived_at | date:'mediumDate' }}</div>
+        </div>
+        <span class="badge badge--present">LOCKED & ARCHIVED</span>
+      </div>
+
+      <div class="tw-card__body">
+        <div class="d-grid gap-4 mb-4" style="grid-template-columns: 1fr 1fr 1fr;">
+          <div class="text-center p-3 rounded" style="background: #F8FAFB;">
+            <div class="text-xs text-muted font-bold">STUDENTS</div>
+            <div class="font-bold text-xl">{{ arch.stats.total_students }}</div>
+          </div>
+          <div class="text-center p-3 rounded" style="background: #F8FAFB;">
+            <div class="text-xs text-muted font-bold">DAYS</div>
+            <div class="font-bold text-xl">{{ arch.stats.total_working_days }}</div>
+          </div>
+          <div class="text-center p-3 rounded" style="background: #F8FAFB;">
+            <div class="text-xs text-muted font-bold">AVG ATTENDANCE</div>
+            <div class="font-bold text-xl text-primary">{{ arch.stats.avg_attendance_percentage }}%</div>
+          </div>
+        </div>
+
+        <div class="text-xs text-muted mb-2 font-semibold">Includes in ZIP:</div>
+        <div class="d-flex flex-wrap gap-2 text-xs">
+          <span class="badge badge--no-dot badge--info">Attendance.xlsx</span>
+          <span class="badge badge--no-dot badge--info">Attendance.csv</span>
+          <span class="badge badge--no-dot badge--warning">Low_Attendance.xlsx</span>
+        </div>
+      </div>
+
+      <div class="tw-card__footer justify-between">
+        <span class="text-xs text-muted">Format: ZIP Package</span>
+        <button class="btn btn--primary btn--sm" (click)="downloadArchiveZip(arch)">
+          <i class="bi bi-download"></i> Download Monthly ZIP
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

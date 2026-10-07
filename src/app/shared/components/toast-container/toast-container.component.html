@@ -1,0 +1,21 @@
+<div class="toast-container" *ngIf="(toasts$ | async) as toasts">
+  <div
+    *ngFor="let t of toasts"
+    class="toast toast--{{ t.type }}"
+    [class.toast--leaving]="t.leaving"
+  >
+    <div class="toast__icon">
+      <span class="material-symbols-rounded" *ngIf="t.type === 'success'">check_circle</span>
+      <span class="material-symbols-rounded" *ngIf="t.type === 'error'">error</span>
+      <span class="material-symbols-rounded" *ngIf="t.type === 'warning'">warning</span>
+      <span class="material-symbols-rounded" *ngIf="t.type === 'info'">info</span>
+    </div>
+    <div class="toast__content">
+      <div class="toast__title">{{ t.title }}</div>
+      <div class="toast__message" *ngIf="t.message">{{ t.message }}</div>
+    </div>
+    <button type="button" class="toast__close" (click)="dismiss(t.id)" aria-label="Close notification">
+      <span class="material-symbols-rounded">close</span>
+    </button>
+  </div>
+</div>

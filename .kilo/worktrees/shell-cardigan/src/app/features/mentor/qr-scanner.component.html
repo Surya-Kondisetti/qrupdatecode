@@ -1,0 +1,107 @@
+<div class="qr-scanner-page p-6">
+  <!-- Header -->
+  <div class="page-header">
+    <div class="page-header__info">
+      <h1 class="page-title">Live QR Attendance Scanner</h1>
+      <p class="page-subtitle">Scan student pass QR code with camera or manual token code</p>
+    </div>
+    <div class="page-header__actions">
+      <div class="session-selector d-flex align-center gap-2">
+        <label class="font-bold text-sm">Target Session:</label>
+        <button class="btn btn--sm" [class.btn--primary]="selectedSession === 'morning'" [class.btn--secondary]="selectedSession !== 'morning'" (click)="selectedSession = 'morning'">
+          Morning (08-11 AM)
+        </button>
+        <button class="btn btn--sm" [class.btn--primary]="selectedSession === 'afternoon'" [class.btn--secondary]="selectedSession !== 'afternoon'" (click)="selectedSession = 'afternoon'">
+          Afternoon (01-03 PM)
+        </button>
+        <button class="btn btn--sm btn--danger ml-3" (click)="closeActiveSession()">
+          <i class="bi bi-lock-fill"></i> Close Session & Mark Absentees
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="d-grid gap-6" style="grid-template-columns: 1fr 1fr;">
+    <!-- Camera View & Manual Token Input Box -->
+    <div class="tw-card">
+      <div class="tw-card__header">
+        <div class="tw-card__title">Live Camera Stream</div>
+        <span class="badge badge--present">CAMERA ACTIVE</span>
+      </div>
+
+      <div class="tw-card__body p-6 text-center">
+        <!-- ZXing Camera Scanner Component -->
+        <div class="camera-viewport-box mb-5 mx-auto">
+          <zxing-scanner (scanSuccess)="onScanSuccess($event)" [autofocusEnabled]="true"></zxing-scanner>
+          <div class="scanner-laser-line"></div>
+        </div>
+
+        <p class="text-xs text-muted mb-4">Position student QR code within square target line to scan.</p>
+
+        <!-- Manual Token Code Input -->
+        <div class="manual-input-box p-4 rounded text-left" style="background: #F8FAFB; border: 1px solid #E5E7EB;">
+          <label class="font-semibold text-xs text-muted mb-2 d-block">MANUAL TOKEN SCANNER (KEYBOARD / USB BARCODE SCANNER)</label>
+          <div class="d-flex gap-2">
+            <input type="text" class="form-control" placeholder="Enter student token (e.g. token-uuid-100)" [(ngModel)]="manualTokenInput" (keyup.enter)="submitManualToken()">
+            <button class="btn btn--primary" (click)="submitManualToken()">Verify Scan</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Verification Result & History Card -->
+    <div class="tw-card">
+      <div class="tw-card__header">
+        <div class="tw-card__title">Scan Verification Result</div>
+      </div>
+
+      <div class="tw-card__body p-6">
+        <!-- Scan Verification Card Display as requested in Master Prompt -->
+        <div class="scan-result-card p-6 mb-6 rounded-lg text-center"
+          *ngIf="lastScannedResult"
+          [class.success-card]="lastScannedResult.success"
+          [class.error-card]="!lastScannedResult.success">
+
+          <div class="result-badge mb-3">
+            <span *ngIf="lastScannedResult.success" class="text-success font-extrabold text-xl">✓ Attendance Marked</span>
+            <span *ngIf="!lastScannedResult.success" class="text-danger font-extrabold text-xl">⚠ Scan Warning</span>
+          </div>
+
+          <div class="result-msg text-sm mb-4">{{ lastScannedResult.message }}</div>
+
+          <div class="student-scan-details p-4 rounded text-left" *ngIf="lastScannedResult.student" style="background: rgba(255,255,255,0.9); border: 1px solid #E5E7EB;">
+            <div class="d-grid gap-2" style="grid-template-columns: 1fr 1fr;">
+              <div><span class="text-muted text-xs">Student:</span> <strong class="d-block">{{ lastScannedResult.student.full_name }}</strong></div>
+              <div><span class="text-muted text-xs">Roll Number:</span> <strong class="d-block text-primary">{{ lastScannedResult.student.roll_number }}</strong></div>
+              <div><span class="text-muted text-xs">Batch:</span> <strong class="d-block">{{ lastScannedResult.student.batch?.name }}</strong></div>
+              <div><span class="text-muted text-xs">Scan Time:</span> <strong class="d-block">{{ lastScannedResult.scanTime }}</strong></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="empty-scan-placeholder p-8 text-center text-muted" *ngIf="!lastScannedResult">
+          <i class="bi bi-upc-scan display-4 d-block mb-2 text-muted"></i>
+          Awaiting student QR scan...
+        </div>
+
+        <!-- Recent Session Scans Log -->
+        <h4 class="mb-3">Session Scan Log</h4>
+        <div class="scan-history-list" style="max-height: 250px; overflow-y: auto;">
+          <div class="history-item p-3 mb-2 rounded d-flex align-center justify-between" *ngFor="let item of scannedHistory" style="background: #F8FAFB; border: 1px solid #E5E7EB;">
+            <div class="d-flex align-center gap-3">
+              <div class="student-avatar">{{ item.student.full_name.charAt(0) }}</div>
+              <div>
+                <div class="font-bold text-sm">{{ item.student.full_name }}</div>
+                <div class="text-xs text-muted">{{ item.student.roll_number }} • {{ item.student.batch?.name }}</div>
+              </div>
+            </div>
+            <div class="text-right">
+              <span class="badge badge--present">PRESENT</span>
+              <div class="text-xs text-muted mt-1">{{ item.time }}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,75 @@
+.stepper-bar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  background: #ffffff;
+  padding: 16px 24px;
+  border-radius: 12px;
+  border: 1px solid #E5E7EB;
+
+  .step-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    .step-num {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: #F1F4F8;
+      color: #555B63;
+      font-weight: 700;
+      font-size: 0.85rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .step-label { font-size: 0.88rem; font-weight: 600; color: #555B63; }
+
+    &.active {
+      .step-num { background: #E2661A; color: #ffffff; }
+      .step-label { color: #212529; font-weight: 700; }
+    }
+
+    &.completed {
+      .step-num { background: #22C55E; color: #ffffff; }
+    }
+  }
+
+  .step-line {
+    width: 40px;
+    height: 2px;
+    background: #E5E7EB;
+  }
+}
+
+.upload-dropzone {
+  border: 2px dashed #CBD5E1;
+  border-radius: 16px;
+  background: #F8FAFB;
+  transition: all 200ms ease;
+
+  &:hover {
+    border-color: #E2661A;
+    background: rgba(226, 102, 26, 0.02);
+  }
+}
+
+.table-row-error {
+  background: rgba(239, 68, 68, 0.05) !important;
+}
+
+.success-icon-circle {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: rgba(34, 197, 94, 0.15);
+  color: #22C55E;
+  font-size: 2.2rem;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}

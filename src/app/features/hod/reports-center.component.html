@@ -1,0 +1,213 @@
+<div class="reports-center-page p-6">
+  <!-- Header -->
+  <div class="page-header mb-6">
+    <div class="page-header__info">
+      <h1 class="page-title">Admin & HOD Custom Report Export Center</h1>
+      <p class="page-subtitle">Download filtered attendance reports according to requirement (Absentees, Present, Low Attendance, Branch, Batch)</p>
+    </div>
+    <div class="page-header__actions d-flex gap-2 wrap">
+      <button class="btn btn--danger" (click)="exportAbsenteesOnly('xlsx')">
+        <i class="bi bi-file-earmark-x-fill me-1"></i> Download Absentees (Excel)
+      </button>
+      <button class="btn btn--warning" (click)="exportLowAttendanceDefaulters('xlsx')">
+        <i class="bi bi-exclamation-triangle-fill me-1"></i> Download Defaulters (<75%)
+      </button>
+      <button class="btn btn--success" (click)="exportReport('xlsx')">
+        <i class="bi bi-file-earmark-excel me-1"></i> Download All (Excel)
+      </button>
+    </div>
+  </div>
+
+  <!-- Dedicated Quick Export Shortcuts Cards for Admin & HOD Requirements -->
+  <div class="d-grid gap-4 mb-6" style="grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));">
+    <!-- Absentees Download Requirement Card -->
+    <div class="tw-card p-5" style="border-left: 5px solid #EF4444; background: #ffffff;">
+      <div class="d-flex align-center justify-between mb-2">
+        <span class="badge badge--danger"><i class="bi bi-person-x-fill me-1"></i> ABSENTEE REPORT</span>
+        <i class="bi bi-download text-danger fs-5"></i>
+      </div>
+      <h3 class="font-bold mb-1" style="color: #1E293B;">Absent Students Report</h3>
+      <p class="text-xs text-muted mb-4">Instantly download all students who are ABSENT or have missed session records.</p>
+
+      <div class="d-flex gap-2 wrap">
+        <button class="btn btn--sm btn--danger flex-1" (click)="exportAbsenteesOnly('xlsx')">
+          <i class="bi bi-file-earmark-excel me-1"></i> Excel (.xlsx)
+        </button>
+        <button class="btn btn--sm btn--outline flex-1" (click)="exportAbsenteesOnly('csv')" style="color: #EF4444; border-color: #EF4444;">
+          <i class="bi bi-filetype-csv me-1"></i> CSV
+        </button>
+        <button class="btn btn--sm btn--secondary" (click)="exportAbsenteesOnly('pdf')">
+          <i class="bi bi-printer me-1"></i> PDF
+        </button>
+      </div>
+    </div>
+
+    <!-- Low Attendance Defaulters Card (<75%) -->
+    <div class="tw-card p-5" style="border-left: 5px solid #F59E0B; background: #ffffff;">
+      <div class="d-flex align-center justify-between mb-2">
+        <span class="badge badge--warning"><i class="bi bi-exclamation-triangle-fill me-1"></i> DEFAULTERS (<75%)</span>
+        <i class="bi bi-download text-warning fs-5"></i>
+      </div>
+      <h3 class="font-bold mb-1" style="color: #1E293B;">Low Attendance Defaulters</h3>
+      <p class="text-xs text-muted mb-4">Export list of students falling below the mandatory 75% minimum threshold.</p>
+
+      <div class="d-flex gap-2 wrap">
+        <button class="btn btn--sm btn--warning flex-1" (click)="exportLowAttendanceDefaulters('xlsx')">
+          <i class="bi bi-file-earmark-excel me-1"></i> Excel (.xlsx)
+        </button>
+        <button class="btn btn--sm btn--outline flex-1" (click)="exportLowAttendanceDefaulters('csv')" style="color: #F59E0B; border-color: #F59E0B;">
+          <i class="bi bi-filetype-csv me-1"></i> CSV
+        </button>
+        <button class="btn btn--sm btn--secondary" (click)="exportLowAttendanceDefaulters('pdf')">
+          <i class="bi bi-printer me-1"></i> PDF
+        </button>
+      </div>
+    </div>
+
+    <!-- Full Department Summary Download Card -->
+    <div class="tw-card p-5" style="border-left: 5px solid #22C55E; background: #ffffff;">
+      <div class="d-flex align-center justify-between mb-2">
+        <span class="badge badge--success"><i class="bi bi-check-circle-fill me-1"></i> FULL SUMMARY</span>
+        <i class="bi bi-download text-success fs-5"></i>
+      </div>
+      <h3 class="font-bold mb-1" style="color: #1E293B;">Complete Department Report</h3>
+      <p class="text-xs text-muted mb-4">Full breakdown showing Roll No, Name, Present Days, Absent Days, & Total %.</p>
+
+      <div class="d-flex gap-2 wrap">
+        <button class="btn btn--sm btn--success flex-1" (click)="exportReport('xlsx')">
+          <i class="bi bi-file-earmark-excel me-1"></i> Excel (.xlsx)
+        </button>
+        <button class="btn btn--sm btn--info flex-1" (click)="exportReport('csv')">
+          <i class="bi bi-filetype-csv me-1"></i> CSV
+        </button>
+        <button class="btn btn--sm btn--secondary" (click)="exportReport('pdf')">
+          <i class="bi bi-printer me-1"></i> PDF
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Advanced Multi-Requirement Filter & Exporter Card -->
+  <div class="tw-card mb-6" style="background: #ffffff; border: 1px solid #e2e8f0;">
+    <div class="tw-card__header">
+      <div class="tw-card__title text-primary d-flex align-center gap-2">
+        <i class="bi bi-sliders"></i> Custom Requirement Filter & Exporter
+      </div>
+      <div class="tw-card__subtitle">Configure custom requirement filters (Absent, Present, Low Attendance, Branch, Batch) and download instantly</div>
+    </div>
+    <div class="tw-card__body">
+      <div class="d-grid gap-4 mb-4" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));">
+        <div>
+          <label class="form-label font-bold text-xs text-uppercase text-muted mb-1 d-block">Filter Requirement / Status</label>
+          <select class="form-control font-bold" [(ngModel)]="selectedStatusFilter" style="border-color: #3B82F6;">
+            <option value="all">📊 All Students (Full Breakdown)</option>
+            <option value="absent">🔴 Absent Students Requirement Only</option>
+            <option value="low_attendance">⚠️ Low Attendance Defaulters (<75%)</option>
+            <option value="present">🟢 Present Students Requirement Only</option>
+            <option value="late">🟡 Late Attendance Students</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="form-label font-bold text-xs text-uppercase text-muted mb-1 d-block">Department / Branch</label>
+          <select class="form-control" [(ngModel)]="selectedBranchId">
+            <option value="">All Departments</option>
+            <option *ngFor="let br of branches" [value]="br.id">{{ br.name }} ({{ br.code }})</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="form-label font-bold text-xs text-uppercase text-muted mb-1 d-block">Batch</label>
+          <select class="form-control" [(ngModel)]="selectedBatchId">
+            <option value="">All Batches</option>
+            <option *ngFor="let bt of batches" [value]="bt.id">{{ bt.name }}</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="form-label font-bold text-xs text-uppercase text-muted mb-1 d-block">Timeframe</label>
+          <select class="form-control" [(ngModel)]="reportTimeframe">
+            <option value="overall">📊 Overall Aggregate Summary</option>
+            <option value="daily">📅 Daily Attendance Log</option>
+            <option value="weekly">🗓️ Weekly Summary (7 Days)</option>
+            <option value="monthly">🗓️ Monthly Summary (Current Month)</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="d-flex align-center justify-between wrap gap-3 pt-3" style="border-top: 1px solid #f1f5f9;">
+        <span class="text-xs text-muted">Generate matching records according to requirement:</span>
+        <div class="d-flex gap-2 wrap">
+          <button class="btn btn--sm btn--success" (click)="exportReport('xlsx')">
+            <i class="bi bi-file-earmark-excel me-1"></i> Excel (.xlsx)
+          </button>
+          <button class="btn btn--sm btn--info" (click)="exportReport('csv')">
+            <i class="bi bi-filetype-csv me-1"></i> CSV (.csv)
+          </button>
+          <button class="btn btn--sm btn--warning" (click)="exportReport('pdf')">
+            <i class="bi bi-file-earmark-pdf me-1"></i> PDF Printable Report
+          </button>
+          <button class="btn btn--sm btn--secondary" (click)="exportReport('json')">
+            <i class="bi bi-filetype-json me-1"></i> JSON (.json)
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="d-grid gap-6 grid-2-col">
+    <!-- Email Dispatches Card -->
+    <div class="tw-card">
+      <div class="tw-card__header">
+        <div class="tw-card__title">Scheduled Daily HOD Email Dispatches</div>
+      </div>
+      <div class="tw-card__body">
+        <div class="email-schedule-item p-4 mb-4 rounded" style="background: #F8FAFB; border: 1px solid #E5E7EB;">
+          <div class="d-flex justify-between align-center mb-2">
+            <span class="font-bold">Morning Session Email Report</span>
+            <span class="badge badge--present">TRIGGERED AT 11:30 AM</span>
+          </div>
+          <p class="text-xs text-muted mb-3">Sends daily morning attendance statistics and absent list PDF/Excel attachment to HOD email.</p>
+          <button class="btn btn--sm btn--primary" (click)="sendMorningEmailReport()">
+            <i class="bi bi-send me-1"></i> Send Morning Email Report Now
+          </button>
+        </div>
+
+        <div class="email-schedule-item p-4 rounded" style="background: #F8FAFB; border: 1px solid #E5E7EB;">
+          <div class="d-flex justify-between align-center mb-2">
+            <span class="font-bold">Afternoon Session Email Report</span>
+            <span class="badge badge--info">TRIGGERED AT 03:00 PM</span>
+          </div>
+          <p class="text-xs text-muted mb-3">Sends final daily summary, branch breakdowns, and low attendance notifications to HOD.</p>
+          <button class="btn btn--sm btn--primary" (click)="sendAfternoonEmailReport()">
+            <i class="bi bi-send me-1"></i> Send Afternoon Email Report Now
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Google Sheets Integration Card -->
+    <div class="tw-card">
+      <div class="tw-card__header">
+        <div class="tw-card__title">Google Sheets Live Synchronization</div>
+        <span class="badge badge--present">CONNECTED</span>
+      </div>
+      <div class="tw-card__body">
+        <div class="p-4 mb-4 rounded text-center" style="background: rgba(34, 197, 94, 0.05); border: 1.5px solid #22C55E;">
+          <i class="bi bi-file-earmark-spreadsheet display-4 text-success d-block mb-2"></i>
+          <h4>TechWing Attendance Google Spreadsheet</h4>
+          <p class="text-xs text-muted mb-3">Auto-updates monthly sheets: September 2026, October 2026</p>
+          <div class="text-xs font-semibold text-dark mb-3">Last Synced: {{ lastGoogleSheetsSync }}</div>
+
+          <button class="btn btn--success btn--full" (click)="syncGoogleSheetsNow()" [disabled]="isSyncingSheets">
+            <i class="bi bi-arrow-repeat me-1"></i> {{ isSyncingSheets ? 'Synchronizing Sheets...' : 'Sync to Google Sheets Now' }}
+          </button>
+        </div>
+
+        <div class="text-xs text-muted">
+          Columns: <code>Roll Number</code> | <code>Student Name</code> | <code>Branch</code> | <code>Batch</code> | <code>Status</code> | <code>Attendance %</code>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

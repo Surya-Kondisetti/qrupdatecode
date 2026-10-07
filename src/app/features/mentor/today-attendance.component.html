@@ -1,0 +1,73 @@
+<div class="today-attendance-page p-6">
+  <!-- Header -->
+  <div class="page-header">
+    <div class="page-header__info">
+      <h1 class="page-title">Today's Attendance Roster</h1>
+      <p class="page-subtitle">{{ todayStr }} • Morning & Afternoon Sessions</p>
+    </div>
+    <div class="page-header__actions">
+      <button class="btn btn--primary" (click)="exportToday()">
+        <i class="bi bi-file-earmark-excel"></i> Export Roster XLSX
+      </button>
+    </div>
+  </div>
+
+  <!-- Summary Cards -->
+  <div class="d-grid gap-5 mb-6" style="grid-template-columns: 1fr 1fr 1fr;">
+    <div class="stat-card stat-card--blue">
+      <div class="stat-card__content text-center">
+        <div class="stat-card__label">Total Enrolled</div>
+        <div class="stat-card__value">{{ students.length }}</div>
+      </div>
+    </div>
+    <div class="stat-card stat-card--green">
+      <div class="stat-card__content text-center">
+        <div class="stat-card__label">Present Today</div>
+        <div class="stat-card__value">{{ presentCount }}</div>
+      </div>
+    </div>
+    <div class="stat-card stat-card--red">
+      <div class="stat-card__content text-center">
+        <div class="stat-card__label">Absent Today</div>
+        <div class="stat-card__value">{{ absentCount }}</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filter Tabs -->
+  <div class="d-flex gap-2 mb-4">
+    <button class="btn btn--sm" [class.btn--primary]="activeTab === 'all'" [class.btn--secondary]="activeTab !== 'all'" (click)="activeTab = 'all'">All Students</button>
+    <button class="btn btn--sm" [class.btn--success]="activeTab === 'present'" [class.btn--secondary]="activeTab !== 'present'" (click)="activeTab = 'present'">Present Only</button>
+    <button class="btn btn--sm" [class.btn--danger]="activeTab === 'absent'" [class.btn--secondary]="activeTab !== 'absent'" (click)="activeTab = 'absent'">Absent Only</button>
+  </div>
+
+  <!-- Table -->
+  <div class="tw-card">
+    <div class="tw-card__body p-0">
+      <div class="tw-table-wrapper">
+        <table class="tw-table">
+          <thead>
+            <tr>
+              <th>Roll Number</th>
+              <th>Student Name</th>
+              <th>Branch / Batch</th>
+              <th>Morning Session</th>
+              <th>Afternoon Session</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let s of students">
+              <td class="font-bold text-primary">{{ s.roll_number }}</td>
+              <td class="font-semibold">{{ s.full_name }}</td>
+              <td>{{ s.branch?.code }} - {{ s.batch?.name }}</td>
+              <td><span class="badge badge--present">PRESENT</span></td>
+              <td><span class="badge badge--na">PENDING</span></td>
+              <td><span class="badge badge--present">PRESENT</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,136 @@
+<div class="hod-dashboard-page p-6">
+  <!-- Header -->
+  <div class="page-header">
+    <div class="page-header__info">
+      <h1 class="page-title">HOD Student & Attendance Monitor</h1>
+      <p class="page-subtitle">Computer Science Engineering • Department-wide student tracking & email dispatches</p>
+    </div>
+    <div class="page-header__actions">
+      <button class="btn btn--secondary" (click)="sendEmailToHOD()">
+        <i class="bi bi-envelope-paper-fill"></i> Send Daily Report to HOD Email
+      </button>
+      <button class="btn btn--primary" (click)="downloadBatchAttendanceReport()">
+        <i class="bi bi-file-earmark-excel"></i> Export Batch Report XLSX
+      </button>
+    </div>
+  </div>
+
+  <!-- Stat Cards -->
+  <div class="d-grid gap-5 mb-8" style="grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));" *ngIf="stats">
+    <div class="stat-card stat-card--orange">
+      <div class="stat-card__icon"><i class="bi bi-building"></i></div>
+      <div class="stat-card__content">
+        <div class="stat-card__label">Total Department Students</div>
+        <div class="stat-card__value">{{ students.length }}</div>
+        <div class="stat-card__change positive">CSE Department</div>
+      </div>
+    </div>
+
+    <div class="stat-card stat-card--green">
+      <div class="stat-card__icon"><i class="bi bi-person-check"></i></div>
+      <div class="stat-card__content">
+        <div class="stat-card__label">Present Today</div>
+        <div class="stat-card__value">{{ stats.present_today }}</div>
+        <div class="stat-card__change positive">Morning & Afternoon Verified</div>
+      </div>
+    </div>
+
+    <div class="stat-card stat-card--red">
+      <div class="stat-card__icon"><i class="bi bi-exclamation-octagon-fill"></i></div>
+      <div class="stat-card__content">
+        <div class="stat-card__label">Below 75% Threshold</div>
+        <div class="stat-card__value">{{ lowAttendanceStudents.length }}</div>
+        <div class="stat-card__change negative">Action Required</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Search & Batch Filter Bar -->
+  <div class="filter-bar mb-6">
+    <div class="filter-bar__search">
+      <div class="input-group">
+        <i class="bi bi-search input-icon"></i>
+        <input type="text" class="form-control" placeholder="HOD Search by Roll Number (e.g. 241UAI0070), student name, email..."
+          [(ngModel)]="searchQuery" (ngModelChange)="onSearchOrFilterChange()">
+      </div>
+    </div>
+
+    <div class="filter-bar__filters d-flex gap-3">
+      <!-- Department Filter -->
+      <select class="form-control" [(ngModel)]="selectedBranchId" (change)="onSearchOrFilterChange()" style="width: 210px;">
+        <option value="">All Departments</option>
+        <option *ngFor="let br of branches" [value]="br.id">{{ br.name }} ({{ br.code }})</option>
+      </select>
+
+      <!-- Batch Filter -->
+      <select class="form-control" [(ngModel)]="selectedBatchId" (change)="onSearchOrFilterChange()" style="width: 180px;">
+        <option value="">All Batches</option>
+        <option *ngFor="let bt of batches" [value]="bt.id">{{ bt.name }}</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- HOD Student Attendance Monitor Table -->
+  <div class="tw-card mb-8">
+    <div class="tw-card__header">
+      <div>
+        <div class="tw-card__title">Department Trainees Roster ({{ filteredStudents.length }})</div>
+        <div class="tw-card__subtitle">Showing student attendance performance & course details</div>
+      </div>
+      <button class="btn btn--sm btn--secondary" (click)="downloadBatchAttendanceReport()">Download XLSX</button>
+    </div>
+
+    <div class="tw-card__body p-0">
+      <div class="tw-table-wrapper">
+        <table class="tw-table">
+          <thead>
+            <tr>
+              <th>Roll Number</th>
+              <th>Student Name</th>
+              <th>Branch / Batch</th>
+              <th>Combo Course</th>
+              <th>Attendance %</th>
+              <th>Present / Total Days</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let s of filteredStudents">
+              <td class="font-bold text-primary">{{ s.roll_number }}</td>
+              <td>
+                <div class="d-flex align-center gap-3">
+                  <div class="student-avatar">{{ s.full_name.charAt(0) }}</div>
+                  <div>
+                    <div class="cell-primary">{{ s.full_name }}</div>
+                    <div class="cell-secondary">{{ s.email }}</div>
+                  </div>
+                </div>
+              </td>
+              <td><span class="badge badge--no-dot badge--info">{{ s.branch?.code }}</span> {{ s.batch?.name }}</td>
+              <td><span class="badge badge--no-dot badge--warning font-bold">{{ s.combo_name || 'AWS + AGENTIC-AI' }}</span></td>
+              <td>
+                <span class="badge font-bold text-sm"
+                  [class.badge--present]="getStudentSummary(s.id).percentage >= 75"
+                  [class.badge--absent]="getStudentSummary(s.id).percentage < 75">
+                  {{ getStudentSummary(s.id).percentage }}%
+                </span>
+              </td>
+              <td>{{ getStudentSummary(s.id).present_days }} / {{ getStudentSummary(s.id).total_days }} Days</td>
+              <td>
+                <span class="badge" [class.badge--present]="getStudentSummary(s.id).percentage >= 75" [class.badge--warning]="getStudentSummary(s.id).percentage < 75">
+                  {{ getStudentSummary(s.id).percentage >= 75 ? 'GOOD STANDING' : 'LOW ATTENDANCE' }}
+                </span>
+              </td>
+            </tr>
+
+            <tr *ngIf="filteredStudents.length === 0">
+              <td colspan="7" class="text-center py-8 text-muted">
+                No student records found matching the search or batch filter.
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>

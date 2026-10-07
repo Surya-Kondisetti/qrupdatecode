@@ -1,0 +1,155 @@
+<div class="student-import-page p-6">
+  <!-- Header -->
+  <div class="page-header">
+    <div class="page-header__info">
+      <h1 class="page-title">Excel / CSV Bulk Trainee Import</h1>
+      <p class="page-subtitle">Import student spreadsheet to auto-generate unique Skill Sync QR passes at once & export ZIP</p>
+    </div>
+    <div class="page-header__actions">
+      <button class="btn btn--secondary" (click)="downloadTemplate()">
+        <i class="bi bi-download"></i> Download student_import_template.xlsx
+      </button>
+      <a routerLink="/admin/students" class="btn btn--ghost">Back to Students</a>
+    </div>
+  </div>
+
+  <!-- Stepper Bar -->
+  <div class="stepper-bar mb-6">
+    <div class="step-item" [class.active]="currentStep >= 1" [class.completed]="currentStep > 1">
+      <span class="step-num">1</span>
+      <span class="step-label">Upload File</span>
+    </div>
+    <div class="step-line"></div>
+    <div class="step-item" [class.active]="currentStep >= 2" [class.completed]="currentStep > 2">
+      <span class="step-num">2</span>
+      <span class="step-label">Preview & Parse</span>
+    </div>
+    <div class="step-line"></div>
+    <div class="step-item" [class.active]="currentStep >= 3" [class.completed]="currentStep > 3">
+      <span class="step-num">3</span>
+      <span class="step-label">Validate Data</span>
+    </div>
+    <div class="step-line"></div>
+    <div class="step-item" [class.active]="currentStep >= 6" [class.completed]="currentStep >= 6">
+      <span class="step-num">4</span>
+      <span class="step-label">Auto QR Generation & ZIP Download</span>
+    </div>
+  </div>
+
+  <!-- Step 1: Upload Box -->
+  <div class="tw-card mb-6" *ngIf="currentStep === 1">
+    <div class="tw-card__body text-center p-12">
+      <div class="upload-dropzone p-8">
+        <i class="bi bi-cloud-arrow-up display-3 text-primary d-block mb-3"></i>
+        <h3>Upload Student Spreadsheet</h3>
+        <p class="text-muted mb-4">Drag and drop your <code>.xlsx</code>, <code>.xls</code>, or <code>.csv</code> file here to import trainees and auto-generate Skill Sync QR passes at once</p>
+        <input type="file" #fileInput (change)="onFileSelected($event)" accept=".xlsx, .xls, .csv" style="display: none;">
+        <button class="btn btn--primary btn--lg" (click)="fileInput.click()">
+          <i class="bi bi-folder2-open"></i> Browse Files
+        </button>
+      </div>
+
+      <div class="mt-6 text-sm text-muted">
+        Need the standard column layout? <a (click)="downloadTemplate()" class="font-bold text-primary" style="cursor: pointer;">Download sample Excel template</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Step 3 & 4: Preview Table & Validation -->
+  <div class="tw-card mb-6" *ngIf="currentStep >= 3 && currentStep < 6">
+    <div class="tw-card__header">
+      <div>
+        <div class="tw-card__title">Import Data Validation Preview</div>
+        <div class="tw-card__subtitle">Found {{ parsedRows.length }} total rows from {{ selectedFile?.name }}</div>
+      </div>
+      <div class="d-flex gap-3">
+        <button class="btn btn--secondary" (click)="resetImport()">Cancel & Upload New</button>
+        <button class="btn btn--primary btn--lg" (click)="processImport()" [disabled]="isProcessing">
+          <i class="bi bi-magic"></i> Import & Generate All QR Passes (ZIP)
+        </button>
+      </div>
+    </div>
+
+    <div class="tw-card__body p-0">
+      <div class="tw-table-wrapper">
+        <table class="tw-table">
+          <thead>
+            <tr>
+              <th>Row</th>
+              <th>Roll Number</th>
+              <th>Student Name</th>
+              <th>Combo Course</th>
+              <th>Email</th>
+              <th>Branch / Batch</th>
+              <th>Status</th>
+              <th>Validation Errors</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let row of parsedRows; let i = index" [class.table-row-error]="!row._valid">
+              <td class="font-mono text-xs">{{ row._row }}</td>
+              <td class="font-bold text-primary">{{ row.roll_number || '—' }}</td>
+              <td class="font-semibold">{{ row.full_name || '—' }}</td>
+              <td><span class="badge badge--no-dot badge--warning font-bold">{{ row.combo_name || 'AWS + AGENTIC-AI' }}</span></td>
+              <td>{{ row.email || '—' }}</td>
+              <td><span class="badge badge--no-dot badge--info">{{ row.branch_code }}</span> {{ row.batch_name }}</td>
+              <td>
+                <span class="badge" [class.badge--present]="row._valid" [class.badge--absent]="!row._valid">
+                  {{ row._valid ? 'VALID' : 'INVALID' }}
+                </span>
+              </td>
+              <td>
+                <div *ngFor="let err of row._errors" class="text-xs text-danger font-semibold">
+                  • {{ err }}
+                </div>
+                <span *ngIf="row._valid" class="text-xs text-success">✓ Ready to import</span>
+              </td>
+              <td>
+                <button class="btn btn--sm btn--ghost text-danger" (click)="removeRow(i)">Remove</button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Step 6: Import Complete Summary + Auto QR Pass ZIP Download -->
+  <div class="tw-card" *ngIf="currentStep === 6 && importResult">
+    <div class="tw-card__body text-center p-10">
+      <div class="success-icon-circle mx-auto mb-4">✓</div>
+      <h2>Import & Bulk QR Pass Generation Complete!</h2>
+      <p class="text-muted mb-6">Imported <strong>{{ importResult.imported }}</strong> trainees and generated unique Skill Sync pass cards for every trainee.</p>
+
+      <div class="d-grid gap-4 mx-auto mb-8" style="max-width: 500px; grid-template-columns: 1fr 1fr 1fr;">
+        <div class="stat-card stat-card--green">
+          <div class="stat-card__content text-center">
+            <div class="stat-card__label">Trainees Imported</div>
+            <div class="stat-card__value">{{ importResult.imported }}</div>
+          </div>
+        </div>
+        <div class="stat-card stat-card--yellow">
+          <div class="stat-card__content text-center">
+            <div class="stat-card__label">Duplicates</div>
+            <div class="stat-card__value">{{ importResult.duplicates }}</div>
+          </div>
+        </div>
+        <div class="stat-card stat-card--red">
+          <div class="stat-card__content text-center">
+            <div class="stat-card__label">Skipped</div>
+            <div class="stat-card__value">{{ importResult.invalid }}</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="d-flex justify-center gap-4 flex-wrap">
+        <button class="btn btn--accent btn--xl" (click)="downloadImportedQRZip()" [disabled]="isDownloadingZip">
+          <i class="bi bi-file-earmark-zip-fill"></i> {{ isDownloadingZip ? 'Downloading ZIP...' : 'Download Generated Skill Sync Passes ZIP' }}
+        </button>
+        <a routerLink="/admin/students" class="btn btn--primary btn--xl">View Trainee Directory</a>
+      </div>
+    </div>
+  </div>
+</div>

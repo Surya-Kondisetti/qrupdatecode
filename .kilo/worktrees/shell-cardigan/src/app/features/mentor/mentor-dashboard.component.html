@@ -1,0 +1,56 @@
+<div class="mentor-dashboard-page p-6">
+  <!-- Header -->
+  <div class="page-header">
+    <div class="page-header__info">
+      <h1 class="page-title">Mentor Dashboard</h1>
+      <p class="page-subtitle">Assigned Batches • Computer Science Engineering • {{ todayStr }}</p>
+    </div>
+    <div class="page-header__actions">
+      <a routerLink="/mentor/scanner" class="btn btn--primary btn--lg">
+        <i class="bi bi-qr-code-scan"></i> Launch Camera QR Scanner
+      </a>
+    </div>
+  </div>
+
+  <!-- Stat Cards -->
+  <div class="d-grid gap-5 mb-8" style="grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));" *ngIf="stats">
+    <div class="stat-card stat-card--orange">
+      <div class="stat-card__icon"><i class="bi bi-people-fill"></i></div>
+      <div class="stat-card__content">
+        <div class="stat-card__label">Assigned Students</div>
+        <div class="stat-card__value">{{ assignedStudents.length }}</div>
+        <div class="stat-card__change positive">Batch 01 & Batch 02</div>
+      </div>
+    </div>
+
+    <div class="stat-card stat-card--green">
+      <div class="stat-card__icon"><i class="bi bi-check-circle-fill"></i></div>
+      <div class="stat-card__content">
+        <div class="stat-card__label">Present Today</div>
+        <div class="stat-card__value">{{ stats.present_today }}</div>
+        <div class="stat-card__change positive">Morning Session Verified</div>
+      </div>
+    </div>
+
+    <div class="stat-card stat-card--red">
+      <div class="stat-card__icon"><i class="bi bi-x-circle-fill"></i></div>
+      <div class="stat-card__content">
+        <div class="stat-card__label">Absent Today</div>
+        <div class="stat-card__value">{{ stats.absent_today }}</div>
+        <div class="stat-card__change negative">Pending afternoon scan</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- QR Scanner CTA Box -->
+  <div class="tw-card mb-8 p-8 text-center" style="background: linear-gradient(135deg, #110F17 0%, #212529 100%); color: #ffffff;">
+    <i class="bi bi-qr-code-scan display-3 text-accent d-block mb-3"></i>
+    <h2 class="mb-2" style="color: #ffffff !important; font-weight: 700;">Live Camera QR Scanner Active</h2>
+    <p class="mb-6 mx-auto" style="max-width: 500px; color: #ffffff !important; opacity: 0.95;">
+      Use mobile, laptop, or tablet camera to scan student passes for instant present verification.
+    </p>
+    <a routerLink="/mentor/scanner" class="btn btn--accent btn--xl">
+      <i class="bi bi-camera-video-fill me-1"></i> Open Camera Scanner Studio
+    </a>
+  </div>
+</div>

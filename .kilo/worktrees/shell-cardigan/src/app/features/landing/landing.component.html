@@ -1,0 +1,171 @@
+<div class="landing-page">
+  <!-- HERO SECTION -->
+  <section id="home" class="hero-section">
+    <div class="container">
+      <div class="hero-content animate-fadeInUp">
+        <div class="hero-badge">
+          <span class="badge-icon">⚡</span>
+          <span>Next-Gen Student Management</span>
+        </div>
+
+        <h1 class="hero-title">
+          Smart Attendance <br/>
+          <span class="highlight">Management Platform</span>
+        </h1>
+
+        <p class="hero-subtitle">
+          Track, manage and analyze student attendance with secure QR technology, real-time analytics, automated email reports, and seamless Google Sheets integration.
+        </p>
+
+        <div class="hero-cta">
+          <button type="button" class="btn btn--primary btn--xl" (click)="navigateToLogin()">
+            Get Started
+            <span class="material-symbols-rounded">arrow_forward</span>
+          </button>
+
+          <button type="button" class="btn btn--secondary btn--xl" (click)="navigateToLogin()">
+            <span class="material-symbols-rounded">lock</span>
+            System Login
+          </button>
+        </div>
+
+        <!-- STATS HIGHLIGHT -->
+        <div class="hero-stats">
+          <div class="hero-stat-item">
+            <span class="stat-num">99.9%</span>
+            <span class="stat-lbl">Scanning Accuracy</span>
+          </div>
+          <div class="stat-divider"></div>
+          <div class="hero-stat-item">
+            <span class="stat-num">&lt; 1s</span>
+            <span class="stat-lbl">Instant Marking</span>
+          </div>
+          <div class="stat-divider"></div>
+          <div class="hero-stat-item">
+            <span class="stat-num">4 Roles</span>
+            <span class="stat-lbl">Admin, Mentor, HOD, Student</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FEATURES SECTION -->
+  <section id="features" class="features-section">
+    <div class="container">
+      <div class="section-header text-center">
+        <span class="section-tag">Enterprise Core Features</span>
+        <h2>Built for Complete Educational Excellence</h2>
+        <p>Comprehensive attendance workflow from individual QR generation to monthly compliance archival.</p>
+      </div>
+
+      <div class="features-grid">
+        <!-- Card 1 -->
+        <div class="feature-card">
+          <div class="feature-icon orange">
+            <span class="material-symbols-rounded">qr_code_scanner</span>
+          </div>
+          <h3>QR Attendance</h3>
+          <p>Instant camera scanning for mentors. Unique secure tokens prevent proxy attendance and multiple scans in the same session.</p>
+        </div>
+
+        <!-- Card 2 -->
+        <div class="feature-card">
+          <div class="feature-icon yellow">
+            <span class="material-symbols-rounded">group</span>
+          </div>
+          <h3>Student Management</h3>
+          <p>Bulk import students via Excel/CSV, assign batches & mentors, filter by branch, and generate customizable QR identity cards.</p>
+        </div>
+
+        <!-- Card 3 -->
+        <div class="feature-card">
+          <div class="feature-icon blue">
+            <span class="material-symbols-rounded">analytics</span>
+          </div>
+          <h3>Real-Time Reports</h3>
+          <p>Automated HOD email notifications after Morning (11:00 AM) and Afternoon (3:00 PM) sessions with low-attendance warnings.</p>
+        </div>
+
+        <!-- Card 4 -->
+        <div class="feature-card">
+          <div class="feature-icon green">
+            <span class="material-symbols-rounded">archive</span>
+          </div>
+          <h3>Monthly Analytics & Archival</h3>
+          <p>Never lose attendance history. Non-destructive period rollover keeps past months locked and accessible for audit and verification.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ROLE OVERVIEW SECTION -->
+  <section class="roles-section">
+    <div class="container">
+      <div class="section-header text-center">
+        <span class="section-tag">Role-Based Ecosystem</span>
+        <h2>Tailored Interfaces for Every User</h2>
+      </div>
+
+      <div class="roles-grid">
+        <div class="role-card">
+          <div class="role-badge-chip admin">Admin</div>
+          <h3>Full System Control</h3>
+          <ul>
+            <li>Manage Students, Mentors & HODs</li>
+            <li>Import Excel & Export ZIP Archives</li>
+            <li>Google Sheets Sync & Session Timings</li>
+          </ul>
+        </div>
+
+        <div class="role-card">
+          <div class="role-badge-chip mentor">Mentor</div>
+          <h3>Rapid Attendance Marking</h3>
+          <ul>
+            <li>Mobile & Laptop Camera Scanner</li>
+            <li>Present / Absent Live Session Tracking</li>
+            <li>Attendance Correction Workflow</li>
+          </ul>
+        </div>
+
+        <div class="role-card">
+          <div class="role-badge-chip hod">HOD</div>
+          <h3>Department Oversight</h3>
+          <ul>
+            <li>Branch-wise Attendance Breakdown</li>
+            <li>Identify Students Below 75%</li>
+            <li>Automated Email Reports</li>
+          </ul>
+        </div>
+
+        <div class="role-card">
+          <div class="role-badge-chip student">Student</div>
+          <h3>Personal Transparency</h3>
+          <ul>
+            <li>Personal Unique QR Identity</li>
+            <li>Monthly Calendar Heatmap</li>
+            <li>Attendance Streak & History</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="landing-footer">
+    <div class="container">
+      <div class="footer-content">
+        <div class="footer-brand">
+          <div class="brand-logo">
+            <div class="logo-badge">TW</div>
+            <span class="brand-main" style="color: #fff;">TechWing</span>
+          </div>
+          <p>TechWing Student Attendance Management System — Designed for precision, security, and effortless institutional tracking.</p>
+        </div>
+        <div class="footer-copy">
+          &copy; {{ currentYear }} TechWing & GGU. All Rights Reserved.
+        </div>
+      </div>
+    </div>
+  </footer>
+</div>

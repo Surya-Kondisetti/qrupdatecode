@@ -1,0 +1,94 @@
+<div class="correction-requests-page p-6">
+  <!-- Header -->
+  <div class="page-header">
+    <div class="page-header__info">
+      <h1 class="page-title">Attendance Correction Workflow</h1>
+      <p class="page-subtitle">Submit and review attendance adjustment requests with full audit trail</p>
+    </div>
+    <div class="page-header__actions">
+      <button class="btn btn--primary" (click)="openRequestModal()">
+        <i class="bi bi-pencil-square"></i> + Request Correction
+      </button>
+    </div>
+  </div>
+
+  <!-- Table -->
+  <div class="tw-card">
+    <div class="tw-card__body p-0">
+      <div class="tw-table-wrapper">
+        <table class="tw-table">
+          <thead>
+            <tr>
+              <th>Student</th>
+              <th>Roll Number</th>
+              <th>Original Status</th>
+              <th>Requested Status</th>
+              <th>Reason</th>
+              <th>Status</th>
+              <th style="text-align: right;" *ngIf="authService.isAdmin || authService.isHOD">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let c of corrections">
+              <td>
+                <div class="d-flex align-center gap-3">
+                  <div class="student-avatar">{{ c.student?.full_name?.charAt(0) }}</div>
+                  <div>
+                    <div class="cell-primary">{{ c.student?.full_name }}</div>
+                    <div class="cell-secondary">{{ c.requested_at | date:'medium' }}</div>
+                  </div>
+                </div>
+              </td>
+              <td class="font-bold text-primary">{{ c.student?.roll_number }}</td>
+              <td><span class="badge badge--absent">{{ c.original_status | uppercase }}</span></td>
+              <td><span class="badge badge--present">{{ c.requested_status | uppercase }}</span></td>
+              <td class="text-sm" style="max-width: 250px;">{{ c.reason }}</td>
+              <td>
+                <span class="badge"
+                  [class.badge--pending]="c.status === 'pending'"
+                  [class.badge--present]="c.status === 'approved'"
+                  [class.badge--absent]="c.status === 'rejected'">
+                  {{ c.status | uppercase }}
+                </span>
+              </td>
+              <td style="text-align: right;" *ngIf="authService.isAdmin || authService.isHOD">
+                <div class="d-flex justify-end gap-2" *ngIf="c.status === 'pending'">
+                  <button class="btn btn--sm btn--success" (click)="approveCorrection(c.id)">Approve</button>
+                  <button class="btn btn--sm btn--danger" (click)="rejectCorrection(c.id)">Reject</button>
+                </div>
+                <span *ngIf="c.status !== 'pending'" class="text-xs text-muted font-bold">Resolved</span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal -->
+  <div class="modal-backdrop" *ngIf="showRequestModal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>+ Request Attendance Correction</h3>
+        <button class="btn-close" (click)="closeModal()">×</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label>Select Student *</label>
+          <select class="form-control" [(ngModel)]="selectedStudentId">
+            <option *ngFor="let s of students" [value]="s.id">{{ s.roll_number }} - {{ s.full_name }} ({{ s.branch?.code }})</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Reason for Correction Request *</label>
+          <textarea class="form-control" rows="3" [(ngModel)]="reasonText" placeholder="e.g. Camera QR scan glitch during morning session. Verified manual attendance."></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn--secondary" (click)="closeModal()">Cancel</button>
+        <button class="btn btn--primary" (click)="submitRequest()">Submit Request</button>
+      </div>
+    </div>
+  </div>
+</div>

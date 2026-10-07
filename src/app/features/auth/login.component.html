@@ -1,0 +1,239 @@
+<div class="auth-page">
+  <!-- AMBIENT BACKGROUND GLOWS -->
+  <div class="auth-bg-glow glow-1"></div>
+  <div class="auth-bg-glow glow-2"></div>
+
+  <!-- TOP BAR: BACK LINK & THEME TOGGLE -->
+  <div class="auth-topbar">
+    <a routerLink="/" class="back-link" title="Back to Home">
+      <span class="material-symbols-rounded">arrow_back</span>
+      <span>Back to Home</span>
+    </a>
+
+
+  </div>
+
+  <div class="auth-wrapper">
+
+
+
+    <!-- MAIN LOGIN CARD -->
+    <div class="tw-card auth-card animate-slideUp">
+      <div class="auth-card__header">
+        <h2>Sign In to Your Account</h2>
+        <p>Enter your credentials to access your role-based dashboard</p>
+      </div>
+
+      <div class="tw-card__body">
+        <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
+          <!-- EMAIL / STUDENT ID FIELD -->
+          <div class="form-group mb-4">
+            <label for="email" class="form-label">Email / Student ID</label>
+            <div class="input-group">
+              <span class="input-icon">
+                <span class="material-symbols-rounded">mail</span>
+              </span>
+              <input id="email" type="email" class="form-control" placeholder="name@techwing.edu or Roll No"
+                formControlName="email" autocomplete="username" />
+            </div>
+            <div class="form-error"
+              *ngIf="loginForm.get('email')?.touched && loginForm.get('email')?.hasError('required')">
+              Email / Student ID is required
+            </div>
+            <div class="form-error"
+              *ngIf="loginForm.get('email')?.touched && loginForm.get('email')?.hasError('email')">
+              Please enter a valid email address
+            </div>
+          </div>
+
+          <!-- PASSWORD FIELD -->
+          <div class="form-group mb-4">
+            <div class="d-flex justify-between align-center mb-1">
+              <label for="password" class="form-label mb-0">Password</label>
+              <button type="button" class="btn-forgot-link" (click)="showForgotPasswordModal = true">
+                Forgot password?
+              </button>
+            </div>
+            <div class="input-group">
+              <span class="input-icon">
+                <span class="material-symbols-rounded">lock</span>
+              </span>
+              <input id="password" [type]="showPassword ? 'text' : 'password'" class="form-control has-right-icon"
+                placeholder="••••••••" formControlName="password" autocomplete="current-password" />
+              <button type="button" class="input-icon input-icon--right toggle-pwd"
+                (click)="showPassword = !showPassword" [title]="showPassword ? 'Hide password' : 'Show password'">
+                <span class="material-symbols-rounded">{{ showPassword ? 'visibility_off' : 'visibility' }}</span>
+              </button>
+            </div>
+            <div class="form-error"
+              *ngIf="loginForm.get('password')?.touched && loginForm.get('password')?.hasError('required')">
+              Password is required
+            </div>
+          </div>
+
+          <!-- REMEMBER ME -->
+          <div class="d-flex justify-between align-center mb-5">
+            <label class="form-check">
+              <input type="checkbox" formControlName="rememberMe" />
+              <span class="form-check-label">Remember me on this device</span>
+            </label>
+          </div>
+
+          <!-- SUBMIT BUTTON -->
+          <button type="submit" class="btn btn--primary btn--xl btn--full btn-submit" [disabled]="loading">
+            <span class="spinner spinner--white spinner--sm" *ngIf="loading"></span>
+            <span *ngIf="!loading" class="btn-text">Sign In</span>
+            <span class="material-symbols-rounded btn-icon" *ngIf="!loading">arrow_forward</span>
+          </button>
+        </form>
+      </div>
+
+      <div class="tw-card__footer justify-center">
+        <a routerLink="/" class="back-footer-btn">
+          <span class="material-symbols-rounded">arrow_back</span>
+          <span>Back to Main Website</span>
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2FA EMAIL OTP VERIFICATION MODAL -->
+  <div class="modal-overlay" *ngIf="show2FAModal">
+    <div class="modal modal--sm animate-scaleUp">
+      <div class="modal__header">
+        <div>
+          <h3 class="modal__title">Two-Factor Authentication</h3>
+          <p class="modal__subtitle">Enter the 6-digit OTP code sent to <strong>{{ otpEmail }}</strong></p>
+        </div>
+        <button type="button" class="modal__close" (click)="show2FAModal = false">
+          <span class="material-symbols-rounded">close</span>
+        </button>
+      </div>
+
+      <div class="modal__body">
+        <!-- Prominent OTP Notification Alert Box -->
+        <div class="p-3 mb-4 rounded"
+          style="background: rgba(226, 102, 26, 0.08); border: 1.5px solid rgba(226, 102, 26, 0.25);">
+          <div class="d-flex align-center justify-between gap-2 flex-wrap">
+            <div>
+              <div class="font-bold text-xs text-primary mb-1">📩 2FA VERIFICATION CODE DISPATCHED</div>
+              <div class="text-xs text-muted">Sent to: <strong>{{ otpEmail }}</strong></div>
+              <div class="font-mono text-sm font-bold text-dark mt-1" *ngIf="lastDispatchedOTP">Code: <span
+                  class="badge badge--accent font-bold" style="font-size: 0.9rem;">{{ lastDispatchedOTP }}</span></div>
+            </div>
+            <button type="button" class="btn btn--sm btn--primary" (click)="autoFillOTP()" *ngIf="lastDispatchedOTP"
+              title="Click to auto-fill 6-digit OTP code">
+              ⚡ Auto-fill Code
+            </button>
+          </div>
+        </div>
+
+        <div class="form-group mb-0">
+          <label for="otpCode" class="form-label">6-Digit Verification OTP</label>
+          <div class="input-group">
+            <span class="input-icon">
+              <span class="material-symbols-rounded">key</span>
+            </span>
+            <input id="otpCode" type="text" class="form-control text-center font-bold"
+              style="letter-spacing: 0.3em; font-size: 1.25rem;" maxlength="6" placeholder="••••••"
+              [(ngModel)]="otpCode" (keyup.enter)="verifyOTP()" />
+          </div>
+          <div class="d-flex justify-between align-center mt-2">
+            <span class="text-xs text-muted">Didn't receive code?</span>
+            <button type="button" class="btn btn--sm btn--ghost text-primary font-bold" (click)="resendOTP()">
+              <i class="bi bi-arrow-clockwise"></i> Resend Fresh OTP
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal__footer">
+        <button type="button" class="btn btn--ghost" (click)="show2FAModal = false">Cancel</button>
+        <button type="button" class="btn btn--primary" [disabled]="otpLoading || !otpCode" (click)="verifyOTP()">
+          <span class="spinner spinner--white spinner--sm" *ngIf="otpLoading"></span>
+          <span>Verify OTP & Sign In</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- FIRST LOGIN PASSWORD CHANGE MODAL -->
+  <div class="modal-overlay" *ngIf="showPasswordChangeModal">
+    <div class="modal modal--sm animate-scaleUp">
+      <div class="modal__header">
+        <div>
+          <h3 class="modal__title">Set New Password</h3>
+          <p class="modal__subtitle">First login detected. Please update your account password to proceed.</p>
+        </div>
+      </div>
+
+      <div class="modal__body">
+        <div class="form-group mb-4">
+          <label for="newPassword" class="form-label">New Password</label>
+          <div class="input-group">
+            <span class="input-icon">
+              <span class="material-symbols-rounded">lock</span>
+            </span>
+            <input id="newPassword" type="password" class="form-control" placeholder="Min 6 characters"
+              [(ngModel)]="newPassword" />
+          </div>
+        </div>
+
+        <div class="form-group mb-0">
+          <label for="confirmPassword" class="form-label">Confirm New Password</label>
+          <div class="input-group">
+            <span class="input-icon">
+              <span class="material-symbols-rounded">lock_reset</span>
+            </span>
+            <input id="confirmPassword" type="password" class="form-control" placeholder="Re-enter new password"
+              [(ngModel)]="confirmPassword" />
+          </div>
+        </div>
+      </div>
+
+      <div class="modal__footer">
+        <button type="button" class="btn btn--primary btn--full" [disabled]="changePasswordLoading || !newPassword"
+          (click)="submitNewPassword()">
+          <span class="spinner spinner--white spinner--sm" *ngIf="changePasswordLoading"></span>
+          <span>Update Password & Enter Dashboard</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- FORGOT PASSWORD MODAL -->
+  <div class="modal-overlay" *ngIf="showForgotPasswordModal">
+    <div class="modal modal--sm animate-scaleUp">
+      <div class="modal__header">
+        <div>
+          <h3 class="modal__title">Reset Password</h3>
+          <p class="modal__subtitle">We'll send a password recovery link to your email</p>
+        </div>
+        <button type="button" class="modal__close" (click)="showForgotPasswordModal = false">
+          <span class="material-symbols-rounded">close</span>
+        </button>
+      </div>
+
+      <div class="modal__body">
+        <div class="form-group mb-0">
+          <label for="forgotEmail" class="form-label">Your Registered Email</label>
+          <div class="input-group">
+            <span class="input-icon">
+              <span class="material-symbols-rounded">mail</span>
+            </span>
+            <input id="forgotEmail" type="email" class="form-control" placeholder="user@techwing.edu"
+              [(ngModel)]="forgotEmail" />
+          </div>
+        </div>
+      </div>
+
+      <div class="modal__footer">
+        <button type="button" class="btn btn--ghost" (click)="showForgotPasswordModal = false">Cancel</button>
+        <button type="button" class="btn btn--primary" [disabled]="forgotLoading" (click)="sendPasswordReset()">
+          <span class="spinner spinner--white spinner--sm" *ngIf="forgotLoading"></span>
+          <span>Send Recovery Email</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

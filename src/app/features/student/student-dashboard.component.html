@@ -1,0 +1,344 @@
+<div class="student-dashboard-page p-6">
+  <!-- Top Quick Roll Number Search Bar (Only shown for guest/admin lookup, hidden in student session) -->
+  <div class="tw-card mb-6 p-6" style="background: linear-gradient(135deg, #110F17 0%, #1A2234 100%); color: #ffffff; border-radius: 16px;" *ngIf="!authService.isStudent">
+    <div class="d-flex justify-between align-center flex-wrap gap-4 mb-4">
+      <div>
+        <h2 class="mb-1" style="color: #ffffff !important; font-weight: 700;">Student Attendance Portal</h2>
+        <p class="text-sm mb-0" style="color: #ffffff !important;">Enter Roll Number to inspect attendance records, monthly calendar & QR passes</p>
+      </div>
+    </div>
+
+    <div class="lookup-input-group d-flex gap-3 flex-wrap">
+      <div class="input-group flex-1" style="min-width: 240px;">
+        <i class="bi bi-search input-icon" style="color: #ffffff;"></i>
+        <input type="text" class="form-control form-control-lg" placeholder="Enter Roll Number (e.g. 241UAI0070 or 23CS101)..."
+          [(ngModel)]="searchRollNumber" (keyup.enter)="lookupStudentByRoll()"
+          style="background: rgba(255,255,255,0.08); color: #ffffff; border: 1.5px solid rgba(255,255,255,0.2);">
+      </div>
+      <button class="btn btn--primary btn--lg" (click)="lookupStudentByRoll()">
+        <i class="bi bi-person-check-fill"></i> View My Attendance
+      </button>
+    </div>
+  </div>
+
+  <ng-container *ngIf="student">
+    <!-- Header -->
+    <div class="page-header flex-wrap gap-4 mb-6">
+      <div class="page-header__info">
+        <h1 class="page-title mb-1">Welcome, {{ student.full_name }}! 👋</h1>
+        <p class="page-subtitle mb-0">
+          Roll No: <strong>{{ student.roll_number }}</strong> • Email: <strong class="text-primary">{{ student.email }}</strong> • {{ student.branch?.name }} • {{ student.batch?.name }}
+        </p>
+      </div>
+      <div class="page-header__actions d-flex gap-2 flex-wrap">
+        <button class="btn btn--outline" (click)="triggerDirectAbsentEmail()" [disabled]="sendingEmail">
+          <i class="bi bi-envelope-at-fill text-primary me-1"></i> {{ sendingEmail ? 'Sending Email...' : 'Send Email Alert' }}
+        </button>
+        <button class="btn btn--primary" (click)="downloadMyPass()">
+          <i class="bi bi-download me-1"></i> Save Skill Sync Pass
+        </button>
+      </div>
+    </div>
+
+    <!-- Student Navigation Tab Bar -->
+    <div class="student-tabs-nav mb-6">
+      <button class="student-tab-btn" [class.active]="activeSection === 'dashboard'" (click)="setSection('dashboard')">
+        <i class="bi bi-grid-1x2-fill"></i> Overview & Breakdown
+      </button>
+      <button class="student-tab-btn" [class.active]="activeSection === 'my-qr'" (click)="setSection('my-qr')">
+        <i class="bi bi-qr-code-scan"></i> My QR Code Pass
+      </button>
+      <button class="student-tab-btn" [class.active]="activeSection === 'calendar'" (click)="setSection('calendar')">
+        <i class="bi bi-calendar3"></i> Monthly Calendar
+      </button>
+      <button class="student-tab-btn" [class.active]="activeSection === 'history'" (click)="setSection('history')">
+        <i class="bi bi-clock-history"></i> Day-by-Day History
+      </button>
+    </div>
+
+    <!-- Attendance Warning Banner if near threshold -->
+    <div class="tw-card mb-6 p-4" style="background: rgba(245, 158, 11, 0.1); border-left: 4px solid #F59E0B;" *ngIf="warningPrediction">
+      <div class="d-flex align-center gap-3">
+        <i class="bi bi-exclamation-triangle-fill text-warning display-6"></i>
+        <div>
+          <div class="font-bold text-dark mb-1">Attendance Trend Warning</div>
+          <div class="text-sm text-secondary-color">{{ warningPrediction }}</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 1: OVERVIEW & BREAKDOWN (activeSection === 'dashboard') -->
+    <div *ngIf="activeSection === 'dashboard'">
+      <!-- Stats Breakdown Grid -->
+      <div class="d-grid gap-5 mb-8" style="grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));" *ngIf="overallSummary || monthlySummary">
+        <div class="stat-card stat-card--purple">
+          <div class="stat-card__icon"><i class="bi bi-calendar-range-fill"></i></div>
+          <div class="stat-card__content">
+            <div class="stat-card__label">Total Days</div>
+            <div class="stat-card__value">{{ (monthlySummary || overallSummary)?.total_days }} Days</div>
+            <div class="stat-card__change text-muted">Overall Academic Term</div>
+          </div>
+        </div>
+        <div class="stat-card stat-card--green">
+          <div class="stat-card__icon"><i class="bi bi-check-circle-fill"></i></div>
+          <div class="stat-card__content">
+            <div class="stat-card__label">Present Days</div>
+            <div class="stat-card__value" style="color: #10B981;">{{ (monthlySummary || overallSummary)?.present_days }} Days</div>
+            <div class="stat-card__change positive">QR Scanned</div>
+          </div>
+        </div>
+        <div class="stat-card stat-card--red">
+          <div class="stat-card__icon"><i class="bi bi-x-circle-fill"></i></div>
+          <div class="stat-card__content">
+            <div class="stat-card__label">Absent Days</div>
+            <div class="stat-card__value" style="color: #EF4444;">{{ (monthlySummary || overallSummary)?.absent_days }} Days</div>
+            <div class="stat-card__change negative">Unscanned / Missed</div>
+          </div>
+        </div>
+        <div class="stat-card stat-card--blue">
+          <div class="stat-card__icon"><i class="bi bi-pie-chart-fill"></i></div>
+          <div class="stat-card__content">
+            <div class="stat-card__label">Attendance %</div>
+            <div class="stat-card__value">{{ (monthlySummary || overallSummary)?.percentage }}%</div>
+            <div class="stat-card__change positive">Target: &gt;= 75%</div>
+          </div>
+        </div>
+        <div class="stat-card stat-card--orange">
+          <div class="stat-card__icon"><i class="bi bi-fire"></i></div>
+          <div class="stat-card__content">
+            <div class="stat-card__label">Active Streak</div>
+            <div class="stat-card__value">🔥 {{ (monthlySummary || overallSummary)?.current_streak }} Days</div>
+            <div class="stat-card__change positive">Max: {{ (monthlySummary || overallSummary)?.longest_streak }} days</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Main Overview Grid -->
+      <div class="d-grid gap-6 responsive-grid-1-2 mb-8" style="--rtg: 2fr 1fr;">
+        <!-- Recent Attendance Session Logs Table -->
+        <div class="tw-card">
+          <div class="tw-card__header d-flex justify-between align-center">
+            <div>
+              <div class="tw-card__title">Recent Session Logs</div>
+              <div class="tw-card__subtitle">Recent morning & afternoon attendance status</div>
+            </div>
+            <button class="btn btn--xs btn--ghost" (click)="setSection('history')">View Full History &rarr;</button>
+          </div>
+          <div class="tw-card__body">
+            <div class="tw-table-wrapper">
+              <table class="tw-table">
+                <thead>
+                  <tr>
+                    <th>Date</th>
+                    <th>Morning Session</th>
+                    <th>Afternoon Session</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let day of (filteredDailyHistory.length > 0 ? filteredDailyHistory.slice(0, 5) : dailyHistory.slice(0, 5))">
+                    <td class="font-mono text-xs font-bold">{{ day.date }}</td>
+                    <td>
+                      <span class="badge" [class.badge--present]="day.morning === 'present'" [class.badge--absent]="day.morning === 'absent' || !day.morning" [class.badge--late]="day.morning === 'late'">
+                        {{ (day.morning || 'absent') | uppercase }}
+                      </span>
+                    </td>
+                    <td>
+                      <span class="badge" [class.badge--present]="day.afternoon === 'present'" [class.badge--absent]="day.afternoon === 'absent' || !day.afternoon" [class.badge--late]="day.afternoon === 'late'">
+                        {{ (day.afternoon || 'absent') | uppercase }}
+                      </span>
+                    </td>
+                    <td>
+                      <span class="badge" [class.badge--present]="day.final_status === 'present'" [class.badge--absent]="day.final_status === 'absent'" [class.badge--late]="day.final_status === 'late'">
+                        {{ day.final_status | uppercase }}
+                      </span>
+                    </td>
+                  </tr>
+                  <tr *ngIf="dailyHistory.length === 0">
+                    <td colspan="4" class="text-center p-4 text-muted">No attendance logs available.</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- Direct Email Alert Status Card -->
+        <div class="tw-card">
+          <div class="tw-card__header d-flex justify-between align-center">
+            <div class="d-flex align-center gap-2">
+              <i class="bi bi-envelope-paper-fill text-primary"></i>
+              <div class="tw-card__title">Direct Email Alert Service</div>
+            </div>
+            <span class="badge badge--success">Active</span>
+          </div>
+          <div class="tw-card__body p-4">
+            <div class="p-3 mb-3 rounded" style="background: rgba(59, 130, 246, 0.08); border: 1px solid rgba(59, 130, 246, 0.2);">
+              <div class="text-xs font-bold text-primary mb-1">Student Registered Email:</div>
+              <div class="font-mono text-sm font-bold text-dark">{{ student.email }}</div>
+              <div class="text-xs text-muted mt-2">
+                Automatic direct emails are dispatched instantly to student inbox when absent status is finalized.
+              </div>
+            </div>
+            <button class="btn btn--outline btn--full btn--sm" (click)="triggerDirectAbsentEmail()" [disabled]="sendingEmail">
+              <i class="bi bi-send-fill text-primary me-1"></i> Dispatch Test Absent Email Now
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 2: MY QR CODE PASS (activeSection === 'my-qr') -->
+    <div *ngIf="activeSection === 'my-qr'" class="dedicated-qr-section">
+      <div class="tw-card p-8" style="background: linear-gradient(135deg, #0F172A 0%, #1E293B 100%); color: #ffffff; border-radius: 20px;">
+        <div class="text-center max-w-2xl mx-auto">
+          <div class="badge badge--primary mb-3" style="font-size: 0.85rem; padding: 6px 14px; background: rgba(59, 130, 246, 0.2); border: 1px solid rgba(59, 130, 246, 0.4); color: #60A5FA;">
+            <i class="bi bi-shield-check me-1"></i> OFFICIAL SKILL SYNC DIGITAL ATTENDANCE PASS
+          </div>
+          <h2 class="mb-2" style="color: #ffffff !important; font-weight: 800; font-size: 1.8rem;">Digital Verification Pass</h2>
+          <p class="text-secondary-color mb-6" style="color: #94A3B8 !important;">Present this official QR Pass to your mentor or scanner station for instant morning and afternoon session verification.</p>
+
+          <div class="qr-standalone-wrapper mx-auto mb-6 p-6" style="background: #ffffff; border-radius: 20px; box-shadow: 0 20px 50px rgba(0,0,0,0.5); max-width: 380px;">
+            <div class="qr-header-branding mb-4 text-center pb-3" style="border-bottom: 2px dashed #E2E8F0;">
+              <h3 style="color: #1E293B; font-weight: 800; font-size: 1.25rem; margin: 0;">TECHWING ACADEMY</h3>
+              <p style="color: #E2661A; font-weight: 700; font-size: 0.8rem; margin: 2px 0 0;">STUDENT ATTENDANCE ID PASS</p>
+            </div>
+
+            <img [src]="qrCardDataUrl" class="w-100 rounded-lg mx-auto mb-4" alt="Official Student Pass" *ngIf="qrCardDataUrl" style="max-width: 320px; border: 2px solid #F1F5F9;">
+
+            <div class="student-pass-meta text-start p-3 rounded" style="background: #F8FAFC; border: 1px solid #E2E8F0; color: #1E293B;">
+              <div class="d-flex justify-between mb-1">
+                <span class="text-xs text-muted font-bold">NAME:</span>
+                <span class="text-xs font-bold">{{ student.full_name }}</span>
+              </div>
+              <div class="d-flex justify-between mb-1">
+                <span class="text-xs text-muted font-bold">ROLL NO:</span>
+                <span class="text-xs font-mono font-bold text-primary">{{ student.roll_number }}</span>
+              </div>
+              <div class="d-flex justify-between mb-1">
+                <span class="text-xs text-muted font-bold">BRANCH / BATCH:</span>
+                <span class="text-xs font-bold">{{ student.branch?.code }} - {{ student.batch?.name }}</span>
+              </div>
+              <div class="d-flex justify-between">
+                <span class="text-xs text-muted font-bold">COURSE:</span>
+                <span class="text-xs font-bold text-success">{{ student.combo_name || 'AWS + AGENTIC-AI' }}</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="d-flex justify-center gap-3 flex-wrap">
+            <button class="btn btn--primary btn--lg" (click)="downloadMyPass()">
+              <i class="bi bi-download me-1"></i> Download HD Pass Image
+            </button>
+            <button class="btn btn--outline btn--lg" (click)="printQRPass()" style="color: #ffffff; border-color: rgba(255,255,255,0.3);">
+              <i class="bi bi-printer-fill me-1"></i> Print Pass
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 3: MONTHLY CALENDAR (activeSection === 'calendar') -->
+    <div *ngIf="activeSection === 'calendar'">
+      <!-- Month Filter Header Switcher -->
+      <div class="tw-card mb-6 p-4 d-flex justify-between align-center flex-wrap gap-4" style="background: rgba(30, 41, 59, 0.03); border: 1px solid rgba(226, 232, 240, 0.8);">
+        <div class="d-flex align-center gap-3">
+          <div class="icon-circle" style="background: #3B82F6; color: white; width: 42px; height: 42px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem;">
+            <i class="bi bi-calendar3"></i>
+          </div>
+          <div>
+            <h3 class="mb-0 font-bold" style="font-size: 1.1rem; color: #1E293B;">Monthly Wise Attendance Breakdown</h3>
+            <p class="text-xs text-muted mb-0">Showing total working days, present & absent summary for <strong>{{ selectedMonthLabel }}</strong></p>
+          </div>
+        </div>
+
+        <div class="d-flex align-center gap-3">
+          <label class="text-xs font-bold text-muted mb-0">Select Month:</label>
+          <select class="form-control font-semibold" [(ngModel)]="selectedMonthLabel" (change)="onMonthChange()" style="width: 200px; border-color: #3B82F6; background: #ffffff;">
+            <option value="September 2026">September 2026 (Current)</option>
+            <option value="August 2026">August 2026 (Archived)</option>
+            <option value="July 2026">July 2026 (Archived)</option>
+            <option value="All Time">All Time Breakdown</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Calendar & Heatmap Card -->
+      <div class="tw-card" id="calendar-section">
+        <div class="tw-card__header d-flex justify-between align-center flex-wrap gap-3">
+          <div>
+            <div class="tw-card__title">Interactive Monthly Calendar & Heatmap</div>
+            <div class="tw-card__subtitle">Showing Present (Green), Absent (Red), Late (Yellow) for {{ selectedMonthLabel }}</div>
+          </div>
+          <div class="d-flex align-center gap-3 text-xs font-semibold">
+            <span class="d-flex align-center gap-1"><span class="color-dot green"></span> Present</span>
+            <span class="d-flex align-center gap-1"><span class="color-dot red"></span> Absent</span>
+            <span class="d-flex align-center gap-1"><span class="color-dot yellow"></span> Late</span>
+          </div>
+        </div>
+
+        <div class="tw-card__body">
+          <div class="calendar-grid mb-6">
+            <div class="calendar-day-box" *ngFor="let item of filteredDailyHistory"
+              [class.present]="item.final_status === 'present'"
+              [class.absent]="item.final_status === 'absent'"
+              [class.late]="item.final_status === 'late'">
+              <div class="day-num">{{ item.date | date:'dd' }}</div>
+              <div class="day-month text-xs text-muted">{{ item.date | date:'MMM' }}</div>
+              <div class="day-status-label">{{ item.final_status | uppercase }}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 4: DAY-BY-DAY HISTORY (activeSection === 'history') -->
+    <div *ngIf="activeSection === 'history'">
+      <div class="tw-card">
+        <div class="tw-card__header d-flex justify-between align-center flex-wrap gap-3">
+          <div>
+            <div class="tw-card__title">Complete Day-by-Day Session Attendance Record</div>
+            <div class="tw-card__subtitle">Full historical logs for morning and afternoon sessions</div>
+          </div>
+        </div>
+        <div class="tw-card__body">
+          <div class="tw-table-wrapper">
+            <table class="tw-table">
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th>Morning Session (09:15 AM)</th>
+                  <th>Afternoon Session (01:15 PM)</th>
+                  <th>Final Day Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let day of dailyHistory">
+                  <td class="font-mono text-xs font-bold">{{ day.date }}</td>
+                  <td>
+                    <span class="badge" [class.badge--present]="day.morning === 'present'" [class.badge--absent]="day.morning === 'absent' || !day.morning" [class.badge--late]="day.morning === 'late'">
+                      {{ (day.morning || 'absent') | uppercase }}
+                    </span>
+                  </td>
+                  <td>
+                    <span class="badge" [class.badge--present]="day.afternoon === 'present'" [class.badge--absent]="day.afternoon === 'absent' || !day.afternoon" [class.badge--late]="day.afternoon === 'late'">
+                      {{ (day.afternoon || 'absent') | uppercase }}
+                    </span>
+                  </td>
+                  <td>
+                    <span class="badge" [class.badge--present]="day.final_status === 'present'" [class.badge--absent]="day.final_status === 'absent'" [class.badge--late]="day.final_status === 'late'">
+                      {{ day.final_status | uppercase }}
+                    </span>
+                  </td>
+                </tr>
+                <tr *ngIf="dailyHistory.length === 0">
+                  <td colspan="4" class="text-center p-4 text-muted">No attendance logs available.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </ng-container>
+</div>

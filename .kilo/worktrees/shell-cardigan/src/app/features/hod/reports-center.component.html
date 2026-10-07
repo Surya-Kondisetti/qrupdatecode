@@ -1,0 +1,70 @@
+<div class="reports-center-page p-6">
+  <!-- Header -->
+  <div class="page-header">
+    <div class="page-header__info">
+      <h1 class="page-title">Automated Email & Google Sheets Center</h1>
+      <p class="page-subtitle">Schedule morning/afternoon HOD email dispatches and live Google Sheets cloud sync</p>
+    </div>
+    <div class="page-header__actions">
+      <button class="btn btn--primary" (click)="downloadFullDepartmentReport()">
+        <i class="bi bi-file-earmark-excel"></i> Export Department XLSX
+      </button>
+    </div>
+  </div>
+
+  <div class="d-grid gap-6" style="grid-template-columns: 1fr 1fr;">
+    <!-- Email Dispatches Card -->
+    <div class="tw-card">
+      <div class="tw-card__header">
+        <div class="tw-card__title">Scheduled Daily HOD Email Dispatches</div>
+      </div>
+      <div class="tw-card__body">
+        <div class="email-schedule-item p-4 mb-4 rounded" style="background: #F8FAFB; border: 1px solid #E5E7EB;">
+          <div class="d-flex justify-between align-center mb-2">
+            <span class="font-bold">Morning Session Email Report</span>
+            <span class="badge badge--present">TRIGGERED AT 11:00 AM</span>
+          </div>
+          <p class="text-xs text-muted mb-3">Sends daily morning attendance statistics and absent list PDF/Excel attachment to HOD email.</p>
+          <button class="btn btn--sm btn--primary" (click)="sendMorningEmailReport()">
+            <i class="bi bi-send"></i> Send Test Morning Email Now
+          </button>
+        </div>
+
+        <div class="email-schedule-item p-4 rounded" style="background: #F8FAFB; border: 1px solid #E5E7EB;">
+          <div class="d-flex justify-between align-center mb-2">
+            <span class="font-bold">Afternoon Session Email Report</span>
+            <span class="badge badge--info">TRIGGERED AT 03:00 PM</span>
+          </div>
+          <p class="text-xs text-muted mb-3">Sends final daily summary, branch breakdowns, and low attendance notifications to HOD.</p>
+          <button class="btn btn--sm btn--primary" (click)="sendAfternoonEmailReport()">
+            <i class="bi bi-send"></i> Send Test Afternoon Email Now
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Google Sheets Integration Card -->
+    <div class="tw-card">
+      <div class="tw-card__header">
+        <div class="tw-card__title">Google Sheets Live Synchronization</div>
+        <span class="badge badge--present">CONNECTED</span>
+      </div>
+      <div class="tw-card__body">
+        <div class="p-4 mb-4 rounded text-center" style="background: rgba(34, 197, 94, 0.05); border: 1.5px solid #22C55E;">
+          <i class="bi bi-file-earmark-spreadsheet display-4 text-success d-block mb-2"></i>
+          <h4>TechWing Attendance Google Spreadsheet</h4>
+          <p class="text-xs text-muted mb-3">Auto-updates monthly sheets: September 2026, October 2026</p>
+          <div class="text-xs font-semibold text-dark mb-3">Last Synced: {{ lastGoogleSheetsSync }}</div>
+
+          <button class="btn btn--success btn--full" (click)="syncGoogleSheetsNow()" [disabled]="isSyncingSheets">
+            <i class="bi bi-arrow-repeat"></i> {{ isSyncingSheets ? 'Synchronizing Sheets...' : 'Sync to Google Sheets Now' }}
+          </button>
+        </div>
+
+        <div class="text-xs text-muted">
+          Columns: <code>Roll Number</code> | <code>Student Name</code> | <code>Branch</code> | <code>Batch</code> | <code>01-Sep</code> ... <code>30-Sep</code> | <code>Attendance %</code>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,132 @@
+<div class="qr-studio-page p-6">
+  <!-- Header -->
+  <div class="page-header">
+    <div class="page-header__info">
+      <h1 class="page-title">QR Designer & Batch ZIP Studio</h1>
+      <p class="page-subtitle">Customize student pass templates, adjust QR positions, and export batch ZIP files</p>
+    </div>
+    <div class="page-header__actions">
+      <button class="btn btn--accent" (click)="downloadBatchZIP()" [disabled]="isGeneratingZip || studentsInBatch.length === 0">
+        <i class="bi bi-file-earmark-zip"></i> {{ isGeneratingZip ? 'Building ZIP...' : 'Download Selected Batch ZIP' }}
+      </button>
+      <button class="btn btn--primary" (click)="downloadSingleSample()">
+        <i class="bi bi-download"></i> Download Sample PNG
+      </button>
+    </div>
+  </div>
+
+  <!-- Main Grid: Customizer Controls + Live Card Preview -->
+  <div class="d-grid gap-6" style="grid-template-columns: 1fr 1fr;">
+    <!-- Controls Card -->
+    <div class="tw-card">
+      <div class="tw-card__header">
+        <div class="tw-card__title">QR Card Studio Controls</div>
+      </div>
+      <div class="tw-card__body">
+        <!-- Batch Selection -->
+        <div class="form-group mb-5">
+          <label>Target Batch for Export</label>
+          <div class="d-flex gap-2 flex-wrap">
+            <button class="btn btn--sm" *ngFor="let bt of batches"
+              [class.btn--primary]="selectedBatch?.id === bt.id"
+              [class.btn--secondary]="selectedBatch?.id !== bt.id"
+              (click)="selectBatch(bt)">
+              {{ bt.name }} ({{ bt.branch?.code }})
+            </button>
+          </div>
+          <span class="form-hint mt-2" *ngIf="selectedBatch">
+            Selected: {{ studentsInBatch.length }} students queued in {{ selectedBatch.name }}
+          </span>
+        </div>
+
+        <hr class="my-5" style="border-color: #E5E7EB;">
+
+        <!-- Skill Sync Specific Fields -->
+        <h4 class="mb-3">Skill Sync Trainee Pass Customizer</h4>
+        <div class="d-grid gap-4 mb-4" style="grid-template-columns: 1fr 1fr;" *ngIf="sampleStudent">
+          <div class="form-group">
+            <label>Combo / Course Name *</label>
+            <input type="text" class="form-control" [(ngModel)]="sampleStudent.combo_name" (input)="onCustomFieldChange()" placeholder="e.g. AWS + AGENTIC-AI">
+          </div>
+          <div class="form-group">
+            <label>Roll Number *</label>
+            <input type="text" class="form-control" [(ngModel)]="sampleStudent.roll_number" (input)="onCustomFieldChange()" placeholder="e.g. 241UAI0070">
+          </div>
+        </div>
+
+        <!-- Template Fields Toggle -->
+        <h4 class="mb-3">Card Display Fields</h4>
+        <div class="d-grid gap-3 mb-5" style="grid-template-columns: 1fr 1fr;">
+          <label class="form-check">
+            <input type="checkbox" [(ngModel)]="template.fields.show_name" (change)="onFieldToggle()">
+            <span class="form-check-label">Trainee Name</span>
+          </label>
+          <label class="form-check">
+            <input type="checkbox" [(ngModel)]="template.fields.show_roll_number" (change)="onFieldToggle()">
+            <span class="form-check-label">Roll Number</span>
+          </label>
+          <label class="form-check">
+            <input type="checkbox" [(ngModel)]="template.fields.show_branch" (change)="onFieldToggle()">
+            <span class="form-check-label">Branch & Batch</span>
+          </label>
+          <label class="form-check">
+            <input type="checkbox" [(ngModel)]="template.fields.show_combo_name" (change)="onFieldToggle()">
+            <span class="form-check-label">Combo Course Name</span>
+          </label>
+        </div>
+
+        <hr class="my-5" style="border-color: #E5E7EB;">
+
+        <!-- QR Position & Size -->
+        <h4 class="mb-3">QR Placement & Size</h4>
+        <div class="d-grid gap-4 mb-4" style="grid-template-columns: 1fr 1fr;">
+          <div class="form-group">
+            <label>QR Size (px)</label>
+            <input type="range" class="form-range w-full" min="100" max="200" [(ngModel)]="template.qr_position.width" (input)="template.qr_position.height = template.qr_position.width; onPositionChange()">
+            <span class="text-xs text-muted">{{ template.qr_position.width }} x {{ template.qr_position.height }} px</span>
+          </div>
+          <div class="form-group">
+            <label>Vertical Position Y (px)</label>
+            <input type="range" class="form-range w-full" min="100" max="220" [(ngModel)]="template.qr_position.y" (input)="onPositionChange()">
+            <span class="text-xs text-muted">Y Offset: {{ template.qr_position.y }} px</span>
+          </div>
+        </div>
+
+        <!-- Color Options -->
+        <div class="d-grid gap-4" style="grid-template-columns: 1fr 1fr;">
+          <div class="form-group">
+            <label>Card Background</label>
+            <input type="color" class="form-control" style="height: 42px; padding: 2px;" [(ngModel)]="template.background_color" (change)="onPositionChange()">
+          </div>
+          <div class="form-group">
+            <label>Text Color</label>
+            <input type="color" class="form-control" style="height: 42px; padding: 2px;" [(ngModel)]="template.text_color" (change)="onPositionChange()">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Live Card Preview -->
+    <div class="tw-card">
+      <div class="tw-card__header">
+        <div class="tw-card__title">Live Studio Canvas Preview</div>
+        <span class="badge badge--present" *ngIf="sampleStudent">{{ sampleStudent.roll_number }}</span>
+      </div>
+      <div class="tw-card__body text-center p-8 bg-light-preview">
+        <div class="card-preview-container mx-auto mb-4">
+          <img [src]="previewDataUrl" class="card-canvas-img" alt="Card Canvas Preview" *ngIf="previewDataUrl">
+        </div>
+
+        <div class="text-sm text-muted" *ngIf="sampleStudent">
+          Previewing pass for: <strong class="text-dark">{{ sampleStudent.full_name }}</strong> ({{ sampleStudent.branch?.code }} - {{ sampleStudent.batch?.name }})
+        </div>
+      </div>
+      <div class="tw-card__footer justify-between">
+        <span class="text-xs text-muted">Format: PNG • 300x420 Canvas • High DPI</span>
+        <button class="btn btn--primary btn--sm" (click)="downloadBatchZIP()" [disabled]="isGeneratingZip">
+          Export ZIP Package
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

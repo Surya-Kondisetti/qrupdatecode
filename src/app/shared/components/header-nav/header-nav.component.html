@@ -1,0 +1,477 @@
+<header class="techwing-header">
+  <div class="header-container">
+    <!-- Mobile Offcanvas Menu Toggle Button (shown on mobile) -->
+    <button class="offcanvas-toggle-btn" (click)="toggleOffcanvas()" aria-label="Toggle navigation menu">
+      <i class="bi" [ngClass]="showOffcanvas ? 'bi-x-lg' : 'bi-list'"></i>
+    </button>
+
+    <!-- Brand Logo -->
+    <a routerLink="/" class="brand-logo">
+      <div class="logo-box">
+        <img src="../../../../assets/image.png" alt="TechWing Logo">
+      </div>
+    </a>
+
+    <!-- Pill-shaped Dark Navigation Bar (Desktop only ≥ 992px) -->
+    <nav class="pill-navbar desktop-navbar" *ngIf="currentUser">
+      <ng-container [ngSwitch]="currentUser.role">
+        <!-- Admin Nav -->
+        <ng-container *ngSwitchCase="'admin'">
+          <a routerLink="/admin/dashboard" routerLinkActive="active" class="pill-nav-item">Dashboard</a>
+          <a routerLink="/admin/students" routerLinkActive="active" class="pill-nav-item">Students</a>
+          <a routerLink="/admin/qr-designer" routerLinkActive="active" class="pill-nav-item">QR Studio</a>
+          <a routerLink="/admin/attendance" routerLinkActive="active" class="pill-nav-item">Attendance</a>
+          <a routerLink="/admin/archives" routerLinkActive="active" class="pill-nav-item">Archives</a>
+          <a routerLink="/admin/import" routerLinkActive="active" class="pill-nav-item">Excel Import</a>
+        </ng-container>
+
+        <!-- Mentor Nav -->
+        <ng-container *ngSwitchCase="'mentor'">
+          <a routerLink="/mentor/dashboard" routerLinkActive="active" class="pill-nav-item">Dashboard</a>
+          <a routerLink="/mentor/scanner" routerLinkActive="active" class="pill-nav-item highlight-orange">
+            <i class="bi bi-qr-code-scan"></i> QR Scanner
+          </a>
+          <a routerLink="/mentor/today" routerLinkActive="active" class="pill-nav-item">Today's List</a>
+          <a routerLink="/mentor/corrections" routerLinkActive="active" class="pill-nav-item">Corrections</a>
+        </ng-container>
+
+        <!-- HOD Nav -->
+        <ng-container *ngSwitchCase="'hod'">
+          <a routerLink="/hod/dashboard" routerLinkActive="active" class="pill-nav-item">Dashboard</a>
+          <a routerLink="/hod/department" routerLinkActive="active" class="pill-nav-item">Department</a>
+          <a routerLink="/hod/alerts" routerLinkActive="active" class="pill-nav-item highlight-yellow">Low Attendance Alerts</a>
+          <a routerLink="/hod/reports" routerLinkActive="active" class="pill-nav-item">Reports</a>
+        </ng-container>
+
+        <!-- Student Nav -->
+        <ng-container *ngSwitchCase="'student'">
+          <a routerLink="/student/dashboard" routerLinkActive="active" class="pill-nav-item">Dashboard</a>
+          <a routerLink="/student/my-qr" routerLinkActive="active" class="pill-nav-item">My QR Code</a>
+          <a routerLink="/student/calendar" routerLinkActive="active" class="pill-nav-item">Calendar & Streak</a>
+          <a routerLink="/student/history" routerLinkActive="active" class="pill-nav-item">Past Months</a>
+        </ng-container>
+      </ng-container>
+    </nav>
+
+    <!-- Header Actions (Theme, Notifications, User Profile) -->
+    <div class="header-actions">
+
+      <!-- Theme Toggle -->
+      <button class="icon-action-btn theme-btn" (click)="toggleTheme()"
+        [title]="isDarkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'">
+        <svg *ngIf="!isDarkMode" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="5" />
+          <line x1="12" y1="1" x2="12" y2="3" />
+          <line x1="12" y1="21" x2="12" y2="23" />
+          <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
+          <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
+          <line x1="1" y1="12" x2="3" y2="12" />
+          <line x1="21" y1="12" x2="23" y2="12" />
+          <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
+          <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
+        </svg>
+        <svg *ngIf="isDarkMode" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+        </svg>
+      </button>
+
+      <!-- Notifications Bell (only when logged in) -->
+      <div class="notifications-wrapper" *ngIf="currentUser">
+        <button class="icon-action-btn" (click)="toggleNotifications()" title="Student Database Notifications" id="notification-bell-btn">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+            <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+          </svg>
+          <span class="notification-badge" *ngIf="unreadNotificationsCount > 0">{{ unreadNotificationsCount }}</span>
+        </button>
+
+        <div class="notifications-dropdown" *ngIf="showNotifications">
+          <div class="dropdown-header">
+            <div class="d-flex align-center gap-2">
+              <i class="bi bi-bell-fill text-warning"></i>
+              <h4>Student Database Notifications</h4>
+            </div>
+            <div class="d-flex align-center gap-2">
+              <span class="badge badge--danger" *ngIf="unreadNotificationsCount > 0">{{ unreadNotificationsCount }} Alert(s)</span>
+              <button class="btn btn--xs btn--ghost" (click)="markAllNotificationsRead()" title="Mark all as read">Read All</button>
+            </div>
+          </div>
+          <div class="notification-list">
+            <div class="notification-item" *ngFor="let item of notificationsList" [class.read]="item.is_read" (click)="markNotificationRead(item)">
+              <div class="noti-indicator" [class]="item.type"></div>
+              <div class="noti-content">
+                <div class="noti-title">{{ item.title }}</div>
+                <div class="noti-msg">{{ item.message }}</div>
+                <div class="noti-time">{{ item.created_at | date:'shortTime' }}</div>
+              </div>
+            </div>
+            <div class="p-4 text-center text-xs text-muted" *ngIf="notificationsList.length === 0">
+              No notifications in database at this time.
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- User Menu (desktop: full pill; mobile: avatar only) -->
+      <div class="user-menu-wrapper" *ngIf="currentUser">
+        <button class="user-pill-btn" (click)="toggleUserMenu()">
+          <div class="avatar-circle">
+            {{ currentUser.full_name.charAt(0) }}
+          </div>
+          <span class="user-name">{{ currentUser.full_name }}</span>
+          <span class="role-tag" [class]="currentUser.role">{{ currentUser.role | uppercase }}</span>
+        </button>
+
+        <div class="user-dropdown" *ngIf="showUserMenu">
+          <div class="dropdown-user-info">
+            <div class="user-title">{{ currentUser.full_name }}</div>
+            <div class="user-email">{{ currentUser.email }}</div>
+          </div>
+          <div class="dropdown-divider"></div>
+          <a class="dropdown-item" (click)="openProfileModal()">
+            <i class="bi bi-person-gear"></i> Edit Profile & Password
+          </a>
+          <a class="dropdown-item" (click)="logout()">
+            <i class="bi bi-box-arrow-right"></i> Sign Out
+          </a>
+        </div>
+      </div>
+
+      <!-- Sign In Button (desktop only — on mobile it's in the offcanvas) -->
+      <a routerLink="/login" class="btn btn--primary btn--sm sign-in-desktop" *ngIf="!currentUser">Sign In</a>
+    </div>
+  </div>
+</header>
+
+<!-- Mobile Offcanvas Backdrop Overlay -->
+<div class="offcanvas-overlay" *ngIf="showOffcanvas" (click)="closeOffcanvas()"></div>
+
+<!-- Mobile Offcanvas Side Drawer -->
+<aside class="offcanvas-drawer" [class.open]="showOffcanvas">
+  <div class="offcanvas-header">
+    <div class="offcanvas-brand">
+      <img src="../../../../assets/image.png" alt="TechWing Logo" class="offcanvas-logo">
+    </div>
+    <button class="btn-close-offcanvas" (click)="closeOffcanvas()" aria-label="Close Offcanvas">
+      <i class="bi bi-x-lg"></i>
+    </button>
+  </div>
+
+  <div class="offcanvas-body">
+    <!-- User Profile Summary Card -->
+    <div class="offcanvas-user-card" *ngIf="currentUser">
+      <div class="offcanvas-user-avatar">
+        {{ currentUser.full_name.charAt(0) }}
+      </div>
+      <div class="offcanvas-user-info">
+        <div class="offcanvas-user-name">{{ currentUser.full_name }}</div>
+        <div class="offcanvas-user-email">{{ currentUser.email }}</div>
+        <span class="role-tag" [class]="currentUser.role">{{ currentUser.role | uppercase }}</span>
+      </div>
+    </div>
+
+    <div class="offcanvas-section-title" *ngIf="currentUser">Navigation</div>
+
+    <!-- Role-based Navigation Links -->
+    <nav class="offcanvas-nav-list" *ngIf="currentUser">
+      <ng-container [ngSwitch]="currentUser.role">
+        <!-- Admin Nav Links -->
+        <ng-container *ngSwitchCase="'admin'">
+          <a routerLink="/admin/dashboard" routerLinkActive="active" (click)="closeOffcanvas()" class="offcanvas-nav-item">
+            <i class="bi bi-grid-fill"></i>
+            <span>Dashboard</span>
+          </a>
+          <a routerLink="/admin/students" routerLinkActive="active" (click)="closeOffcanvas()" class="offcanvas-nav-item">
+            <i class="bi bi-people-fill"></i>
+            <span>Students</span>
+          </a>
+          <a routerLink="/admin/qr-designer" routerLinkActive="active" (click)="closeOffcanvas()" class="offcanvas-nav-item">
+            <i class="bi bi-qr-code-scan"></i>
+            <span>QR Studio</span>
+          </a>
+          <a routerLink="/admin/attendance" routerLinkActive="active" (click)="closeOffcanvas()" class="offcanvas-nav-item">
+            <i class="bi bi-calendar-check-fill"></i>
+            <span>Attendance</span>
+          </a>
+          <a routerLink="/admin/archives" routerLinkActive="active" (click)="closeOffcanvas()" class="offcanvas-nav-item">
+            <i class="bi bi-archive-fill"></i>
+            <span>Archives</span>
+          </a>
+          <a routerLink="/admin/import" routerLinkActive="active" (click)="closeOffcanvas()" class="offcanvas-nav-item">
+            <i class="bi bi-file-earmark-excel-fill"></i>
+            <span>Excel Import</span>
+          </a>
+        </ng-container>
+
+        <!-- Mentor Nav Links -->
+        <ng-container *ngSwitchCase="'mentor'">
+          <a routerLink="/mentor/dashboard" routerLinkActive="active" (click)="closeOffcanvas()" class="offcanvas-nav-item">
+            <i class="bi bi-grid-fill"></i>
+            <span>Dashboard</span>
+          </a>
+          <a routerLink="/mentor/scanner" routerLinkActive="active" (click)="closeOffcanvas()" class="offcanvas-nav-item highlight-orange">
+            <i class="bi bi-qr-code-scan"></i>
+            <span>QR Scanner</span>
+          </a>
+          <a routerLink="/mentor/today" routerLinkActive="active" (click)="closeOffcanvas()" class="offcanvas-nav-item">
+            <i class="bi bi-list-check"></i>
+            <span>Today's List</span>
+          </a>
+          <a routerLink="/mentor/corrections" routerLinkActive="active" (click)="closeOffcanvas()" class="offcanvas-nav-item">
+            <i class="bi bi-check2-square"></i>
+            <span>Corrections</span>
+          </a>
+        </ng-container>
+
+        <!-- HOD Nav Links -->
+        <ng-container *ngSwitchCase="'hod'">
+          <a routerLink="/hod/dashboard" routerLinkActive="active" (click)="closeOffcanvas()" class="offcanvas-nav-item">
+            <i class="bi bi-grid-fill"></i>
+            <span>Dashboard</span>
+          </a>
+          <a routerLink="/hod/department" routerLinkActive="active" (click)="closeOffcanvas()" class="offcanvas-nav-item">
+            <i class="bi bi-building-fill"></i>
+            <span>Department</span>
+          </a>
+          <a routerLink="/hod/alerts" routerLinkActive="active" (click)="closeOffcanvas()" class="offcanvas-nav-item highlight-yellow">
+            <i class="bi bi-exclamation-triangle-fill"></i>
+            <span>Low Attendance Alerts</span>
+          </a>
+          <a routerLink="/hod/reports" routerLinkActive="active" (click)="closeOffcanvas()" class="offcanvas-nav-item">
+            <i class="bi bi-bar-chart-fill"></i>
+            <span>Reports</span>
+          </a>
+        </ng-container>
+
+        <!-- Student Nav Links -->
+        <ng-container *ngSwitchCase="'student'">
+          <a routerLink="/student/dashboard" routerLinkActive="active" (click)="closeOffcanvas()" class="offcanvas-nav-item">
+            <i class="bi bi-grid-fill"></i>
+            <span>Dashboard</span>
+          </a>
+          <a routerLink="/student/my-qr" routerLinkActive="active" (click)="closeOffcanvas()" class="offcanvas-nav-item">
+            <i class="bi bi-qr-code"></i>
+            <span>My QR Code</span>
+          </a>
+          <a routerLink="/student/calendar" routerLinkActive="active" (click)="closeOffcanvas()" class="offcanvas-nav-item">
+            <i class="bi bi-calendar-range-fill"></i>
+            <span>Calendar & Streak</span>
+          </a>
+          <a routerLink="/student/history" routerLinkActive="active" (click)="closeOffcanvas()" class="offcanvas-nav-item">
+            <i class="bi bi-clock-history"></i>
+            <span>Past Months</span>
+          </a>
+        </ng-container>
+      </ng-container>
+    </nav>
+
+    <!-- Guest Navigation Links -->
+    <nav class="offcanvas-nav-list" *ngIf="!currentUser">
+      <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" (click)="closeOffcanvas()" class="offcanvas-nav-item">
+        <i class="bi bi-house-door-fill"></i>
+        <span>Home</span>
+      </a>
+      <a routerLink="/login" routerLinkActive="active" (click)="closeOffcanvas()" class="offcanvas-nav-item highlight-orange">
+        <i class="bi bi-box-arrow-in-right"></i>
+        <span>Sign In</span>
+      </a>
+    </nav>
+
+    <div class="offcanvas-divider"></div>
+
+    <!-- Quick Actions -->
+    <div class="offcanvas-actions-group">
+      <div class="offcanvas-action-item" (click)="toggleTheme()">
+        <div class="action-left">
+          <i class="bi" [ngClass]="isDarkMode ? 'bi-moon-stars-fill' : 'bi-sun-fill'"></i>
+          <span>Theme: {{ isDarkMode ? 'Dark' : 'Light' }}</span>
+        </div>
+        <i class="bi bi-arrow-repeat"></i>
+      </div>
+
+      <button class="offcanvas-action-item" (click)="openProfileModal(); closeOffcanvas()" *ngIf="currentUser">
+        <div class="action-left">
+          <i class="bi bi-person-gear"></i>
+          <span>Edit Profile & Security</span>
+        </div>
+        <i class="bi bi-chevron-right"></i>
+      </button>
+
+      <button class="offcanvas-action-item text-danger" (click)="logout(); closeOffcanvas()" *ngIf="currentUser">
+        <div class="action-left">
+          <i class="bi bi-box-arrow-right"></i>
+          <span>Sign Out</span>
+        </div>
+      </button>
+    </div>
+  </div>
+</aside>
+
+<!-- Native-like Mobile Bottom Navigation Dock (Visible on mobile viewports < 768px) -->
+<nav class="mobile-app-dock" *ngIf="currentUser">
+  <ng-container [ngSwitch]="currentUser.role">
+    <!-- Admin Dock -->
+    <ng-container *ngSwitchCase="'admin'">
+      <a routerLink="/admin/dashboard" routerLinkActive="active" class="dock-item">
+        <i class="bi bi-grid-fill"></i>
+        <span>Home</span>
+      </a>
+      <a routerLink="/admin/students" routerLinkActive="active" class="dock-item">
+        <i class="bi bi-people-fill"></i>
+        <span>Students</span>
+      </a>
+      <a routerLink="/admin/qr-designer" routerLinkActive="active" class="dock-item">
+        <i class="bi bi-qr-code-scan"></i>
+        <span>QR Studio</span>
+      </a>
+      <a routerLink="/admin/attendance" routerLinkActive="active" class="dock-item">
+        <i class="bi bi-calendar-check-fill"></i>
+        <span>Attendance</span>
+      </a>
+      <a class="dock-item" (click)="openProfileModal()">
+        <i class="bi bi-person-fill"></i>
+        <span>Profile</span>
+      </a>
+    </ng-container>
+
+    <!-- Mentor Dock -->
+    <ng-container *ngSwitchCase="'mentor'">
+      <a routerLink="/mentor/dashboard" routerLinkActive="active" class="dock-item">
+        <i class="bi bi-grid-fill"></i>
+        <span>Dashboard</span>
+      </a>
+      <a routerLink="/mentor/scanner" routerLinkActive="active" class="dock-item highlight">
+        <i class="bi bi-qr-code-scan"></i>
+        <span>Scan QR</span>
+      </a>
+      <a routerLink="/mentor/today" routerLinkActive="active" class="dock-item">
+        <i class="bi bi-list-check"></i>
+        <span>Today</span>
+      </a>
+      <a routerLink="/mentor/corrections" routerLinkActive="active" class="dock-item">
+        <i class="bi bi-check2-square"></i>
+        <span>Fixes</span>
+      </a>
+      <a class="dock-item" (click)="openProfileModal()">
+        <i class="bi bi-person-fill"></i>
+        <span>Profile</span>
+      </a>
+    </ng-container>
+
+    <!-- HOD Dock -->
+    <ng-container *ngSwitchCase="'hod'">
+      <a routerLink="/hod/dashboard" routerLinkActive="active" class="dock-item">
+        <i class="bi bi-grid-fill"></i>
+        <span>Home</span>
+      </a>
+      <a routerLink="/hod/department" routerLinkActive="active" class="dock-item">
+        <i class="bi bi-building-fill"></i>
+        <span>Dept</span>
+      </a>
+      <a routerLink="/hod/alerts" routerLinkActive="active" class="dock-item">
+        <i class="bi bi-exclamation-triangle-fill"></i>
+        <span>Alerts</span>
+      </a>
+      <a routerLink="/hod/reports" routerLinkActive="active" class="dock-item">
+        <i class="bi bi-bar-chart-fill"></i>
+        <span>Reports</span>
+      </a>
+      <a class="dock-item" (click)="openProfileModal()">
+        <i class="bi bi-person-fill"></i>
+        <span>Profile</span>
+      </a>
+    </ng-container>
+
+    <!-- Student Dock -->
+    <ng-container *ngSwitchCase="'student'">
+      <a routerLink="/student/dashboard" routerLinkActive="active" class="dock-item">
+        <i class="bi bi-grid-fill"></i>
+        <span>Home</span>
+      </a>
+      <a routerLink="/student/my-qr" routerLinkActive="active" class="dock-item highlight">
+        <i class="bi bi-qr-code"></i>
+        <span>My QR</span>
+      </a>
+      <a routerLink="/student/calendar" routerLinkActive="active" class="dock-item">
+        <i class="bi bi-calendar-range-fill"></i>
+        <span>Streak</span>
+      </a>
+      <a routerLink="/student/history" routerLinkActive="active" class="dock-item">
+        <i class="bi bi-clock-history"></i>
+        <span>History</span>
+      </a>
+      <a class="dock-item" (click)="openProfileModal()">
+        <i class="bi bi-person-fill"></i>
+        <span>Profile</span>
+      </a>
+    </ng-container>
+  </ng-container>
+</nav>
+
+<!-- Edit Profile & Security Modal -->
+<div class="modal-overlay" *ngIf="showProfileModal" (click)="closeProfileModal()">
+  <div class="modal-card" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <div class="modal-title-group">
+        <i class="bi bi-person-bounding-box text-orange"></i>
+        <div>
+          <h3>Edit Profile & Security</h3>
+          <p class="modal-subtitle">Update your personal details and account password</p>
+        </div>
+      </div>
+      <button class="btn-close" (click)="closeProfileModal()"><i class="bi bi-x-lg"></i></button>
+    </div>
+
+    <form [formGroup]="profileForm" (ngSubmit)="saveProfile()" class="modal-body" *ngIf="profileForm">
+      <div class="role-badge-banner" *ngIf="currentUser">
+        <i class="bi bi-shield-check"></i>
+        <span>Logged in as <strong>{{ currentUser.role | uppercase }}</strong> ({{ currentUser.email }})</span>
+      </div>
+
+      <div class="form-grid">
+        <div class="form-group">
+          <label class="form-label"><i class="bi bi-person"></i> Full Name</label>
+          <input type="text" class="form-control" formControlName="full_name" placeholder="Enter full name">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label"><i class="bi bi-envelope"></i> Email Address</label>
+          <input type="email" class="form-control" formControlName="email" placeholder="Enter email address">
+        </div>
+
+        <div class="form-group full-width">
+          <label class="form-label"><i class="bi bi-telephone"></i> Phone Number</label>
+          <input type="tel" class="form-control" formControlName="phone" placeholder="Enter phone number">
+        </div>
+      </div>
+
+      <div class="password-section">
+        <h4 class="section-title"><i class="bi bi-key"></i> Change Password</h4>
+
+        <div class="form-grid">
+          <div class="form-group">
+            <label class="form-label">New Password</label>
+            <div class="input-with-icon">
+              <input [type]="showPass ? 'text' : 'password'" class="form-control" formControlName="newPassword" placeholder="Min 6 characters">
+              <button type="button" class="btn-eye" (click)="showPass = !showPass">
+                <i class="bi" [ngClass]="showPass ? 'bi-eye-slash' : 'bi-eye'"></i>
+              </button>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Confirm New Password</label>
+            <input [type]="showPass ? 'text' : 'password'" class="form-control" formControlName="confirmPassword" placeholder="Repeat new password">
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-actions">
+        <button type="button" class="btn btn--secondary" (click)="closeProfileModal()">Cancel</button>
+        <button type="submit" class="btn btn--primary" [disabled]="savingProfile">
+          <i class="bi bi-check-lg"></i> {{ savingProfile ? 'Saving...' : 'Save Changes' }}
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
